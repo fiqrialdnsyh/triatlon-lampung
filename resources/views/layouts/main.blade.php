@@ -49,12 +49,31 @@
     <!-- Navbar Global (Sekarang Sticky) -->
     <header class="bg-navy py-6 px-8 md:px-16 flex items-center justify-between z-50 sticky top-0 w-full border-b border-white/10 transition-all duration-300">
         <div class="logo">
-            <a href="{{ url('/') }}" class="text-white text-xl md:text-2xl font-black uppercase tracking-wide">FTI LAMPUNG</a>
+            <a href="{{ url('/') }}" class="flex items-center gap-3 text-white text-xl md:text-2xl font-black uppercase tracking-wide group">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo FTI" class="h-8 md:h-10 object-contain group-hover:scale-105 transition-transform">
+                <span>FTI LAMPUNG</span>
+            </a>
         </div>
         <nav class="hidden md:flex space-x-2 items-center">
             <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active-nav' : 'text-white' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">BERANDA</a>
 
-            <a href="{{ url('/event') }}" class="nav-link {{ request()->is('event*') ? 'active-nav' : 'text-white' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">EVENT</a>
+            <!-- Dropdown Event -->
+            <div class="relative group flex items-center h-full py-2">
+                <a href="{{ url('/event') }}" class="nav-link {{ request()->is('event*') ? 'active-nav' : 'text-white' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm inline-flex items-center">
+                    EVENT
+                    <svg class="w-4 h-4 ml-1 transform group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </a>
+
+                <!-- Kotak Dropdown -->
+                <div class="absolute left-0 top-full mt-0 w-48 bg-navy border border-white/10 shadow-xl rounded-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50 overflow-hidden">
+                    <a href="{{ url('/event/kejurnas') }}" class="block px-5 py-3 text-white hover:bg-yellow hover:text-navy font-bold text-sm uppercase tracking-wider transition-colors border-b border-white/10">
+                        KEJURNAS
+                    </a>
+                    <a href="{{ url('/event/open') }}" class="block px-5 py-3 text-white hover:bg-yellow hover:text-navy font-bold text-sm uppercase tracking-wider transition-colors">
+                        OPEN
+                    </a>
+                </div>
+            </div>
 
             <a href="{{ url('/pelatihan') }}" class="nav-link {{ request()->is('pelatihan*') ? 'active-nav' : 'text-white' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">PELATIHAN</a>
 

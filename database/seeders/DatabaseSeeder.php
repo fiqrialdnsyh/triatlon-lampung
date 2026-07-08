@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         User::create([
             'name' => 'Administrator',
             'email' => 'admin@triatlon.test',
-            'password' => Hash::make('admin123'), // Ini password adminnya
+            'password' => Hash::make('admin123'),
         ]);
     }
 }

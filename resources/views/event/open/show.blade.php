@@ -1,0 +1,278 @@
+@extends('layouts.main')
+
+@section('title', $event->judul . ' - FTI LAMPUNG')
+
+@section('content')
+    <section class="bg-[#F8F9FA] py-12 px-4 md:px-16 min-h-screen">
+        <div class="max-w-7xl mx-auto">
+
+            <a href="{{ route('event.open.index') }}" class="inline-flex items-center text-navy/50 hover:text-navy font-bold text-xs uppercase tracking-wider transition-colors mb-6">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Kembali ke Katalog Event
+            </a>
+
+            @if(session('success'))
+                <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl font-bold text-sm">
+                    ✓ {{ session('success') }}
+                </div>
+            @endif
+
+            @auth
+                @if(auth()->user()->email === 'admin@triatlon.test')
+                    <div class="space-y-6 mb-10">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h3 class="font-black text-navy uppercase text-base">Validasi Lapangan (Check-In Atlet)</h3>
+                                <p class="text-xs text-navy/50 font-medium">Gunakan kamera perangkat untuk memindai lembar tiket QR Code milik atlet saat dilokasi Technical Meeting.</p>
+                            </div>
+                            <button onclick="alert('Fungsi mengaktifkan kamera scanner terintegrasi')" class="w-full md:w-auto bg-navy text-white hover:bg-yellow hover:text-navy border border-navy/20 px-6 py-3 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-colors">
+                                [SCAN QR CODE ATLET]
+                            </button>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden">
+                            <h3 class="font-black text-navy uppercase text-sm mb-4 pb-2 border-b border-gray-100">Daftar Pengajuan Registrasi Peserta</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-navy text-white uppercase font-bold">
+                                            <th class="p-3 rounded-l-md">Data Profil Atlet</th>
+                                            <th class="p-3">Kategori & Tarif</th>
+                                            <th class="p-3 text-center">Bukti Transaksi</th>
+                                            <th class="p-3 text-center rounded-r-md">Aksi Konfirmasi Validasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 font-semibold text-navy">
+                                        @forelse($allRegistrations as $reg)
+                                            <tr class="hover:bg-gray-50/50">
+                                                <td class="p-3 space-y-0.5">
+                                                    <p class="font-black uppercase text-sm">{{ $reg->nama_lengkap }}</p>
+                                                    <p class="text-navy/60">Daerah: {{ $reg->asal_daerah }} | Usia: {{ $reg->usia }} Thn ({{ $reg->jenis_kelamin }})</p>
+                                                    <p class="text-navy/40 font-mono text-[10px]">{{ $reg->email }} | {{ $reg->nomor_telepon }}</p>
+                                                </td>
+                                                <td class="p-3">
+                                                    <p class="font-bold text-navy">{{ $reg->kategori_lomba }}</p>
+                                                    <p class="text-[10px] text-gray-400 uppercase">{{ $reg->golongan_biaya }} - Rp{{ number_format($reg->nominal_bayar) }}</p>
+                                                </td>
+                                                <td class="p-3 text-center">
+                                                    <!-- BUKTI TRANSAKSI: POPUP MODAL -->
+                                                    <button type="button" onclick="openProofModal('{{ asset($reg->bukti_transfer) }}')" class="text-blue-600 hover:text-blue-800 underline font-bold text-[11px] cursor-pointer">
+                                                        Lihat Gambar
+                                                    </button>
+                                                </td>
+                                                <td class="p-3">
+                                                    <!-- LOGIKA KONDISIONAL TAMPILAN STATUS -->
+                                                    @if($reg->status_pembayaran == 'Menunggu')
+                                                        <form action="{{ route('event.open.verifikasi', $reg->id) }}" method="POST" class="flex flex-col sm:flex-row items-center gap-2 justify-end">
+                                                            @csrf
+                                                            <input type="text" name="pesan_penolakan" placeholder="Alasan jika ditolak..." class="bg-gray-50 border border-gray-300 rounded px-2 py-1 text-[11px] w-full sm:w-44 font-medium focus:outline-none focus:border-navy">
+                                                            <div class="flex gap-1 shrink-0">
+                                                                <button type="submit" name="status_pembayaran" value="Valid" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-[10px] uppercase font-black transition-colors cursor-pointer">Terima</button>
+                                                                <button type="submit" name="status_pembayaran" value="Ditolak" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-[10px] uppercase font-black transition-colors cursor-pointer">Tolak</button>
+                                                            </div>
+                                                        </form>
+                                                    @else
+                                                        <div class="flex flex-col items-end gap-1.5 justify-end">
+                                                            <span class="px-3 py-1 rounded text-[10px] font-black uppercase tracking-wider
+                                                                {{ $reg->status_pembayaran == 'Valid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                                STATUS: {{ $reg->status_pembayaran }}
+                                                            </span>
+
+                                                            @if($reg->status_pembayaran == 'Ditolak' && $reg->pesan_penolakan)
+                                                                <p class="text-[9px] text-red-500/80 font-bold max-w-[150px] truncate text-right" title="{{ $reg->pesan_penolakan }}">Alasan: {{ $reg->pesan_penolakan }}</p>
+                                                            @endif
+
+                                                            <!-- TOMBOL RESET UNTUK MENGULANG JIKA SALAH KLIK -->
+                                                            <form action="{{ route('event.open.verifikasi', $reg->id) }}" method="POST">
+                                                                @csrf
+                                                                <button type="submit" name="status_pembayaran" value="Menunggu" class="text-[9px] text-navy/50 font-bold underline hover:text-navy cursor-pointer mt-1">Batalkan (Reset Status)</button>
+                                                            </form>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="p-6 text-center text-navy/40 uppercase font-bold">Belum ada atlet yang mengajukan berkas pendaftaran.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endauth
+
+            @if(!auth()->check() || auth()->user()->email !== 'admin@triatlon.test')
+                <div class="flex flex-col lg:flex-row gap-8">
+
+                    <div class="w-full lg:w-5/12 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                            @if($event->poster)
+                                <img src="{{ asset($event->poster) }}" alt="Poster" class="w-full rounded-xl object-cover mb-6">
+                            @endif
+
+                            <h1 class="font-black text-navy text-2xl uppercase leading-tight mb-4">{{ $event->judul }}</h1>
+
+                            <div class="grid grid-cols-2 gap-3 mb-6">
+                                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl text-center">
+                                    <p class="text-[9px] font-black text-navy/40 uppercase">Sisa Kuota</p>
+                                    <p class="text-lg font-black text-navy">{{ max(0, $event->kuota_maksimal - $kuotaTerisi) }} / {{ $event->kuota_maksimal }}</p>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl text-center">
+                                    <p class="text-[9px] font-black text-navy/40 uppercase">Batas Penutupan</p>
+                                    <p class="text-xs font-black text-red-500 mt-1 uppercase">{{ \Carbon\Carbon::parse($event->batas_pendaftaran)->format('d/m/Y H:i') }}</p>
+                                </div>
+                            </div>
+
+                            @if($event->thb_file)
+                                <a href="{{ asset($event->thb_file) }}" target="_blank" class="w-full bg-yellow text-navy px-4 py-3.5 rounded-xl font-black text-xs uppercase tracking-wider text-center block mb-6 shadow-sm border border-yellow/20">
+                                    Download Technical Handbook (THB)
+                                </a>
+                            @endif
+
+                            <div class="text-xs font-semibold text-navy/80 leading-relaxed border-t border-gray-100 pt-4 whitespace-pre-line">
+                                {{ $event->deskripsi }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full lg:w-7/12">
+                        @if($sudahDaftar)
+                            <div class="bg-white p-8 rounded-2xl border border-gray-200 text-center shadow-sm">
+                                @if($pendaftaranUser->status_pembayaran == 'Valid')
+                                    <div class="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-200">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <h3 class="font-black text-navy text-lg uppercase mb-2">Pendaftaran Diterima</h3>
+                                    <div class="inline-block px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-green-100 text-green-700 my-4">
+                                        Status: VALID
+                                    </div>
+                                    <p class="text-xs font-bold text-navy/50 max-w-sm mx-auto mb-6">Berkas registrasi dan mutasi transaksi Anda telah diverifikasi oleh panitia pelaksana.</p>
+
+                                    <a href="{{ route('event.open.history') }}" class="w-full bg-navy text-yellow py-4 rounded-xl font-black text-xs uppercase tracking-wider transition-colors shadow-md block hover:bg-navy/90">
+                                        Lihat Tiket QR Masuk
+                                    </a>
+                                @else
+                                    <div class="w-16 h-16 bg-yellow/10 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow/20">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    </div>
+                                    <h3 class="font-black text-navy text-lg uppercase mb-2">Berkas Sedang Diverifikasi</h3>
+                                    <div class="inline-block px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-yellow/20 text-yellow-700 border border-yellow/30 my-4">
+                                        Status: MENUNGGU
+                                    </div>
+                                    <p class="text-xs font-bold text-navy/50 max-w-sm mx-auto">Mohon bersabar, bendahara FTI Lampung sedang memeriksa kesesuaian berkas serta mutasi nominal transaksi pendaftaran Anda.</p>
+                                @endif
+                            </div>
+                        @else
+                            <div class="bg-cream p-8 rounded-2xl border border-gray-200 shadow-sm">
+
+                                @if($pendaftaranUser && $pendaftaranUser->status_pembayaran === 'Ditolak')
+                                    <div class="mb-6 bg-red-50 border border-red-300 p-4 rounded-xl">
+                                        <h4 class="text-xs font-black text-red-700 uppercase tracking-wide mb-1">Pendaftaran Sebelumnya Ditolak Panitia</h4>
+                                        <p class="text-xs font-bold text-red-600/80">Alasan Penolakan: "{{ $pendaftaranUser->pesan_penolakan }}"</p>
+                                        <p class="text-[10px] font-medium text-slate-500 mt-2">Anda diperbolehkan memperbaiki isian formulir atau mengunggah ulang bukti resi pembayaran yang valid menggunakan form di bawah ini.</p>
+                                    </div>
+                                @endif
+
+                                <div class="mb-6 bg-white p-5 rounded-xl border-l-4 border-yellow shadow-sm">
+                                    <h4 class="font-black text-navy uppercase text-xs tracking-wider mb-2">Tujuan Rekening Panitia FTI</h4>
+                                    <p class="text-[11px] font-bold text-navy/70 uppercase"><strong class="text-navy">{{ $event->nama_bank }}</strong> | {{ $event->nomor_rekening }} | A.N {{ $event->atas_nama }}</p>
+                                </div>
+
+                                <h3 class="font-oswald text-2xl font-bold uppercase text-navy tracking-wide mb-6">Formulir Registrasi Mandiri</h3>
+                                <form action="{{ route('event.open.register', $event->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                                    @csrf
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Nama Lengkap Sesuai ID Kartu</label>
+                                            <input type="text" name="nama_lengkap" value="{{ auth()->check() ? auth()->user()->name : '' }}" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-bold text-navy focus:outline-none shadow-sm" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Email Korespondensi</label>
+                                            <input type="email" name="email" value="{{ auth()->check() ? auth()->user()->email : '' }}" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-semibold text-navy focus:outline-none shadow-sm" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">No Kontak WhatsApp</label>
+                                            <input type="text" name="nomor_telepon" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-semibold text-navy focus:outline-none shadow-sm" placeholder="Contoh: 08123456" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Usia / Umur Berjalan</label>
+                                            <input type="number" name="usia" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-semibold text-navy focus:outline-none shadow-sm" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Kategori Gender</label>
+                                            <select name="jenis_kelamin" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-bold text-navy focus:outline-none shadow-sm" required>
+                                                <option value="Putra">Putra</option>
+                                                <option value="Putri">Putri</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Asal Daerah Domisili Kabupaten / Kota</label>
+                                            <select name="asal_daerah" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-bold text-navy focus:outline-none shadow-sm" required>
+                                                <option value="" disabled selected>-- Pilih Wilayah --</option>
+                                                @foreach(['Bandar Lampung', 'Metro', 'Pesawaran', 'Pringsewu', 'Tanggamus', 'Lampung Selatan', 'Lampung Tengah', 'Lampung Utara', 'Lampung Barat', 'Lampung Timur', 'Way Kanan', 'Tulang Bawang', 'Tulang Bawang Barat', 'Mesuji', 'Pesisir Barat'] as $w)
+                                                    <option value="{{ $w }}">{{ $w }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Nomor Pertandingan yang Diikuti</label>
+                                            <input type="text" name="kategori_lomba" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-semibold text-navy focus:outline-none shadow-sm" placeholder="Contoh: Sprint Triathlon Elite" required>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Kualifikasi Pilihan Tarif</label>
+                                            <select name="golongan_biaya" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-bold text-navy focus:outline-none shadow-sm" required>
+                                                <option value="" disabled selected>-- Pilih Nominal --</option>
+                                                @php $skemas = json_decode($event->skema_biaya, true) ?? []; @endphp
+                                                @foreach($skemas as $s)
+                                                    <option value="{{ $s['nama'] }}">{{ $s['nama'] }} - (Rp {{ number_format($s['biaya']) }})</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-xl border border-gray-200 mt-2">
+                                        <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-2">Unggah Resi Transaksi Pembayaran</label>
+                                        <input type="file" name="bukti_transfer" accept="image/*" class="w-full text-xs text-navy file:mr-3 file:py-1.5 file:px-3 file:bg-navy file:text-yellow border border-gray-300 rounded p-0.5" required>
+                                    </div>
+                                    <button type="submit" class="w-full bg-navy text-yellow py-4 rounded-xl font-black text-xs uppercase tracking-wider transition-colors shadow-md mt-4">Kirim Berkas Registrasi</button>
+                                </form>
+                            </div>
+                        @endif
+                    </div>
+
+                </div>
+            @endif
+
+        </div>
+    </section>
+
+    <div id="proofModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-navy/80 backdrop-blur-sm cursor-pointer" onclick="closeProofModal()"></div>
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden max-h-[85vh] animate-fadeIn">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="font-black text-navy uppercase text-xs tracking-wider">Lembar Bukti Resi Pembayaran Transaksi</h3>
+                <button onclick="closeProofModal()" class="text-red-500 font-black text-xs uppercase hover:underline cursor-pointer">Tutup</button>
+            </div>
+            <div class="p-6 flex-1 overflow-y-auto bg-gray-100 flex items-center justify-center">
+                <img id="proofImage" src="" alt="Bukti Transfer" class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-md border border-gray-200">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openProofModal(imageUrl) {
+            document.getElementById('proofImage').src = imageUrl;
+            document.getElementById('proofModal').classList.remove('hidden');
+            document.getElementById('proofModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProofModal() {
+            document.getElementById('proofModal').classList.replace('flex', 'hidden');
+            document.getElementById('proofImage').src = '';
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+@endsection

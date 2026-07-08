@@ -11,10 +11,10 @@
                 class="font-oswald text-white text-6xl md:text-8xl font-bold uppercase leading-[1.1] tracking-tight mb-8 drop-shadow-lg">
                 PUSH YOUR LIMITS.<br>TRIUMPH EVERYWHERE.
             </h1>
-            <button
-                class="bg-yellow text-navy px-6 py-2.5 font-black text-sm uppercase rounded-sm hover:bg-white transition duration-300">
+            <a href="{{ url('/event/open') }}"
+                class="inline-block bg-yellow text-navy px-6 py-2.5 font-black text-sm uppercase rounded-sm hover:bg-white transition duration-300">
                 FIND YOUR NEXT RACE
-            </button>
+            </a>
         </div>
     </section>
 
@@ -45,7 +45,7 @@
 
             <!-- Card Pengurus -->
             <a href="{{ url('/pengurus') }}"
-                class="feature-card bg-cream p-10 rounded-[2rem] relative flex flex-col items-start min-h-[280px] shadow-lg cursor-pointer block group">
+                class="feature-card bg-cream p-10 rounded-[2rem] relative flex flex-col items-start min-h-[280px] shadow-lg cursor-pointer block group hover:-translate-y-2 transition-transform duration-300">
                 <div
                     class="w-14 h-14 bg-yellow rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                     <svg class="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -68,7 +68,7 @@
             </a>
 
             <a href="{{ url('/berita') }}"
-                class="feature-card bg-cream p-10 rounded-[2rem] relative flex flex-col items-start min-h-[280px] shadow-lg cursor-pointer block group">
+                class="feature-card bg-cream p-10 rounded-[2rem] relative flex flex-col items-start min-h-[280px] shadow-lg cursor-pointer block group hover:-translate-y-2 transition-transform duration-300">
                 <div
                     class="w-14 h-14 bg-yellow rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                     <svg class="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -115,117 +115,75 @@
         </div>
     </section>
 
+    <!-- INTEGRASI DATA EVENT TERBARU DARI DATABASE -->
+    @php
+        $upcomingEvents = \App\Models\Event::where('tipe', 'Open')
+                            ->where('status', 'Buka')
+                            ->orderBy('tanggal_pelaksanaan', 'asc')
+                            ->take(4)
+                            ->get();
+    @endphp
+
     <section class="bg-cream py-20 px-8 md:px-16" data-aos="fade-up">
-        <h2 class="text-center font-black text-3xl md:text-4xl text-navy uppercase mb-12 tracking-wide">EVENT YANG AKAN
-            DATANG</h2>
+        <h2 class="text-center font-black text-3xl md:text-4xl text-navy uppercase mb-12 tracking-wide">EVENT YANG AKAN DATANG</h2>
         <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <div class="event-card border border-gray-300 rounded-2xl p-4 flex gap-5 bg-transparent items-center">
-                <div class="relative flex-shrink-0">
-                    <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?q=80&w=200&h=140&fit=crop"
-                        alt="Swim" class="w-40 h-28 object-cover rounded-xl shadow-sm">
-                    <div
-                        class="absolute top-1 left-1 flex flex-col w-10 shadow-md overflow-hidden rounded-md border border-navy/10">
-                        <div class="bg-navy text-white text-[10px] font-bold text-center py-0.5 uppercase">JUN</div>
-                        <div class="bg-white text-navy text-base font-black text-center py-0.5">15</div>
+            @forelse($upcomingEvents as $event)
+                <div class="event-card border border-gray-300 rounded-2xl p-4 flex gap-5 bg-transparent items-center hover:bg-white hover:shadow-md transition-all duration-300">
+                    <div class="relative flex-shrink-0">
+                        @if($event->poster)
+                            <img src="{{ asset($event->poster) }}" alt="{{ $event->judul }}" class="w-40 h-28 object-cover rounded-xl shadow-sm">
+                        @else
+                            <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?q=80&w=200&h=140&fit=crop"
+                                alt="Event Placeholder" class="w-40 h-28 object-cover rounded-xl shadow-sm">
+                        @endif
+                        <div
+                            class="absolute top-1 left-1 flex flex-col w-10 shadow-md overflow-hidden rounded-md border border-navy/10">
+                            <div class="bg-navy text-white text-[10px] font-bold text-center py-0.5 uppercase">{{ \Carbon\Carbon::parse($event->tanggal_pelaksanaan)->translatedFormat('M') }}</div>
+                            <div class="bg-white text-navy text-base font-black text-center py-0.5">{{ \Carbon\Carbon::parse($event->tanggal_pelaksanaan)->format('d') }}</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center pr-2 w-full">
+                        <h4 class="font-black text-navy uppercase text-sm md:text-base leading-tight line-clamp-2" title="{{ $event->judul }}">
+                            {{ $event->judul }}
+                        </h4>
+                        <p class="text-[11px] font-black text-navy/50 uppercase mt-1">{{ $event->lokasi }}</p>
+                        <p class="text-xs font-semibold text-navy/70 mt-1 mb-3 leading-snug line-clamp-2">
+                            {{ Str::limit($event->deskripsi, 60) }}
+                        </p>
+                        <div>
+                            <a href="{{ route('event.open.show', $event->slug) }}"
+                                class="inline-block bg-yellow text-navy px-4 py-1.5 text-xs font-black uppercase rounded hover:bg-navy hover:text-yellow transition">REGISTER</a>
+                        </div>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center pr-2">
-                    <h4 class="font-black text-navy uppercase text-sm md:text-base leading-tight">IRONMAN 70.3<br>MIAMI, FL
-                    </h4>
-                    <p class="text-xs font-semibold text-navy/70 mt-1.5 mb-3 leading-snug">Kompetisi renang perairan
-                        terbuka dengan standar rute internasional.</p>
-                    <div>
-                        <button
-                            class="bg-yellow text-navy px-4 py-1.5 text-xs font-black uppercase rounded hover:bg-navy hover:text-yellow transition">REGISTER</button>
-                    </div>
+            @empty
+                <div class="col-span-full border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center">
+                    <p class="font-black text-navy/40 uppercase tracking-widest text-sm">Saat ini belum ada jadwal event yang diterbitkan.</p>
                 </div>
-            </div>
-
-            <div class="event-card border border-gray-300 rounded-2xl p-4 flex gap-5 bg-transparent items-center">
-                <div class="relative flex-shrink-0">
-                    <img src="https://images.unsplash.com/photo-1502224562085-639556652f33?q=80&w=200&h=140&fit=crop"
-                        alt="Run" class="w-40 h-28 object-cover rounded-xl shadow-sm">
-                    <div
-                        class="absolute top-1 left-1 flex flex-col w-10 shadow-md overflow-hidden rounded-md border border-navy/10">
-                        <div class="bg-navy text-white text-[10px] font-bold text-center py-0.5 uppercase">JUN</div>
-                        <div class="bg-white text-navy text-base font-black text-center py-0.5">15</div>
-                    </div>
-                </div>
-                <div class="flex flex-col justify-center pr-2">
-                    <h4 class="font-black text-navy uppercase text-sm md:text-base leading-tight">IRONMAN 70.3<br>MIAMI, FL
-                    </h4>
-                    <p class="text-xs font-semibold text-navy/70 mt-1.5 mb-3 leading-snug">Uji ketahanan fisik lari
-                        marathon melintasi kondisi medan pesisir.</p>
-                    <div>
-                        <button
-                            class="bg-yellow text-navy px-4 py-1.5 text-xs font-black uppercase rounded hover:bg-navy hover:text-yellow transition">REGISTER</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="event-card border border-gray-300 rounded-2xl p-4 flex gap-5 bg-transparent items-center">
-                <div class="relative flex-shrink-0">
-                    <img src="https://images.unsplash.com/photo-1519802772250-a52a9af0eacb?q=80&w=200&h=140&fit=crop"
-                        alt="Swim" class="w-40 h-28 object-cover rounded-xl shadow-sm">
-                    <div
-                        class="absolute top-1 left-1 flex flex-col w-10 shadow-md overflow-hidden rounded-md border border-navy/10">
-                        <div class="bg-navy text-white text-[10px] font-bold text-center py-0.5 uppercase">JUN</div>
-                        <div class="bg-white text-navy text-base font-black text-center py-0.5">26</div>
-                    </div>
-                </div>
-                <div class="flex flex-col justify-center pr-2">
-                    <h4 class="font-black text-navy uppercase text-sm md:text-base leading-tight">IRONMAN 70.3<br>MIAMI, FL
-                    </h4>
-                    <p class="text-xs font-semibold text-navy/70 mt-1.5 mb-3 leading-snug">Fase pendaftaran ditutup untuk
-                        atlet kategori kelompok umur master.</p>
-                    <div>
-                        <button
-                            class="bg-yellow text-navy px-4 py-1.5 text-xs font-black uppercase rounded hover:bg-navy hover:text-yellow transition">REGISTER</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="event-card border border-gray-300 rounded-2xl p-4 flex gap-5 bg-transparent items-center">
-                <div class="relative flex-shrink-0">
-                    <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=200&h=140&fit=crop"
-                        alt="Bike" class="w-40 h-28 object-cover rounded-xl shadow-sm">
-                    <div
-                        class="absolute top-1 left-1 flex flex-col w-10 shadow-md overflow-hidden rounded-md border border-navy/10">
-                        <div class="bg-navy text-white text-[10px] font-bold text-center py-0.5 uppercase">JUN</div>
-                        <div class="bg-white text-navy text-base font-black text-center py-0.5">27</div>
-                    </div>
-                </div>
-                <div class="flex flex-col justify-center pr-2">
-                    <h4 class="font-black text-navy uppercase text-sm md:text-base leading-tight">IRONMAN 70.3<br>MIAMI, FL
-                    </h4>
-                    <p class="text-xs font-semibold text-navy/70 mt-1.5 mb-3 leading-snug">Balap sepeda kecepatan tinggi
-                        melintasi elevasi perbukitan terjal.</p>
-                    <div>
-                        <button
-                            class="bg-yellow text-navy px-4 py-1.5 text-xs font-black uppercase rounded hover:bg-navy hover:text-yellow transition">REGISTER</button>
-                    </div>
-                </div>
-            </div>
+            @endforelse
 
         </div>
     </section>
 
+    <!-- TOP-RANKED ATHLETES (FITUR AKAN DATANG) -->
     <section class="bg-navy py-20 px-8 md:px-16" data-aos="fade-up">
-        <h2 class="text-center font-oswald font-bold text-4xl text-white uppercase mb-12 tracking-wide">TOP-RANKED ATHLETES
-        </h2>
-        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h2 class="text-center font-oswald font-bold text-4xl text-white uppercase mb-1 tracking-wide">TOP-RANKED ATHLETES</h2>
+        <p class="text-center text-yellow text-xs font-black uppercase tracking-widest mb-12">( Fitur Segera Hadir / Dalam Pengembangan )</p>
+
+        <!-- Efek Grayscale dan Opacity untuk menandakan fitur belum aktif -->
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 opacity-60 grayscale pointer-events-none select-none">
 
             <div class="athlete-card bg-cream rounded-2xl p-5 flex items-center relative shadow-lg">
-                <img src="https://i.pravatar.cc/150?img=11" alt="Athlete"
+                <img src="images/logo.png" alt="Athlete"
                     class="w-16 h-16 rounded-full object-cover mr-4 border-2 border-transparent">
                 <div class="flex-1">
-                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">NAME<br>GONDERSON</h4>
+                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">LOREM<br>IPSUM</h4>
                     <p class="text-xs text-navy/70 font-bold mb-0.5">Current ranking 1</p>
-                    <p class="text-xs text-navy font-bold">200 points</p>
+                    <p class="text-xs text-navy font-bold">- points</p>
                 </div>
-                <div class="absolute top-4 right-4 w-6 h-6 bg-yellow rounded flex items-center justify-center shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-navy" fill="currentColor" viewBox="0 0 20 20">
+                <div class="absolute top-4 right-4 w-6 h-6 bg-gray-300 rounded flex items-center justify-center shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-navy/50" fill="currentColor" viewBox="0 0 20 20">
                         <path
                             d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
                         </path>
@@ -234,15 +192,15 @@
             </div>
 
             <div class="athlete-card bg-cream rounded-2xl p-5 flex items-center relative shadow-lg">
-                <img src="https://i.pravatar.cc/150?img=5" alt="Athlete"
+                <img src="images/logo.png" alt="Athlete"
                     class="w-16 h-16 rounded-full object-cover mr-4 border-2 border-transparent">
                 <div class="flex-1">
-                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">NOUK<br>KOOKER</h4>
+                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">LOREM<br>IPSUM</h4>
                     <p class="text-xs text-navy/70 font-bold mb-0.5">Current ranking 2</p>
-                    <p class="text-xs text-navy font-bold">175 points</p>
+                    <p class="text-xs text-navy font-bold">- points</p>
                 </div>
-                <div class="absolute top-4 right-4 w-6 h-6 bg-yellow rounded flex items-center justify-center shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-navy" fill="currentColor" viewBox="0 0 20 20">
+                <div class="absolute top-4 right-4 w-6 h-6 bg-gray-300 rounded flex items-center justify-center shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-navy/50" fill="currentColor" viewBox="0 0 20 20">
                         <path
                             d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
                         </path>
@@ -251,15 +209,15 @@
             </div>
 
             <div class="athlete-card bg-cream rounded-2xl p-5 flex items-center relative shadow-lg">
-                <img src="https://i.pravatar.cc/150?img=12" alt="Athlete"
+                <img src="images/logo.png" alt="Athlete"
                     class="w-16 h-16 rounded-full object-cover mr-4 border-2 border-transparent">
                 <div class="flex-1">
-                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">JANNE<br>DALENSON</h4>
+                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">LOREM<br>IPSUM</h4>
                     <p class="text-xs text-navy/70 font-bold mb-0.5">Current ranking 3</p>
-                    <p class="text-xs text-navy font-bold">160 points</p>
+                    <p class="text-xs text-navy font-bold">- points</p>
                 </div>
-                <div class="absolute top-4 right-4 w-6 h-6 bg-yellow rounded flex items-center justify-center shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-navy" fill="currentColor" viewBox="0 0 20 20">
+                <div class="absolute top-4 right-4 w-6 h-6 bg-gray-300 rounded flex items-center justify-center shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-navy/50" fill="currentColor" viewBox="0 0 20 20">
                         <path
                             d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
                         </path>
