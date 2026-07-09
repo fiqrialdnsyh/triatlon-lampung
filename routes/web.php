@@ -8,6 +8,7 @@ use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\PengurusController;
 use App\Http\Controllers\PersonilController;
 use App\Http\Controllers\EventOpenController;
+use App\Http\Controllers\EventKejurnasController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -123,6 +124,18 @@ Route::get('/event/open/checkin/{id}/cetak', [EventOpenController::class, 'print
 
 // Rute Publik Detail Event (Wildcard {slug} HARUS di paling bawah grup Event Open)
 Route::get('/event/open/{slug}', [EventOpenController::class, 'show'])->name('event.open.show');
+
+// RUTE MANAGEMENT EVENT KEJURNAS
+Route::get('/event/kejurnas', [EventKejurnasController::class, 'index'])->name('event.kejurnas.index');
+Route::get('/event/kejurnas/tambah', [EventKejurnasController::class, 'create'])->name('event.kejurnas.create');
+Route::post('/event/kejurnas/simpan', [EventKejurnasController::class, 'store'])->name('event.kejurnas.store');
+Route::get('/event/kejurnas/{slug}', [EventKejurnasController::class, 'show'])->name('event.kejurnas.show');
+Route::post('/event/kejurnas/{id}/register', [EventKejurnasController::class, 'register'])->name('event.kejurnas.register');
+Route::post('/event/kejurnas/verifikasi/{id}', [EventKejurnasController::class, 'verifikasi'])->name('event.kejurnas.verifikasi');
+Route::post('/event/kejurnas/checkin/qr', [EventKejurnasController::class, 'checkIn'])->name('event.kejurnas.checkin');
+
+// KONTROL KHUSUS ADMIN: PEMBUATAN AKUN KONTINGEN
+Route::post('/event/kejurnas/buat-akun-kontingen', [EventKejurnasController::class, 'buatAkunKontingen'])->name('event.kejurnas.buat_kontingen');
 
 // Rute Pendaftaran Event (Wajib Login)
 Route::middleware(['auth'])->group(function () {

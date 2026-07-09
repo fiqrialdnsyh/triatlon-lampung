@@ -35,5 +35,6 @@ class User extends Authenticatable
         'email',
         'password',
         'google_id', // Tambahkan ini
+        'role',
     ];
 }
