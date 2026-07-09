@@ -91,7 +91,7 @@
             <div class="bg-[#0B1528] w-full py-4 text-center border-b-4 border-yellow-400 relative">
                 <button onclick="closeTicketModal()" class="absolute top-2 right-4 text-white/50 hover:text-white font-black text-sm cursor-pointer">X</button>
                 <p class="text-yellow-400 text-[10px] font-black tracking-widest uppercase">Federasi Triathlon Indonesia</p>
-                <h2 class="text-white text-xs font-black uppercase mt-0.5 tracking-wider">Pas Masuk Validasi</h2>
+                <h2 class="text-white text-xs font-black uppercase mt-0.5 tracking-wider">Provinsi Lampung</h2>
             </div>
 
             <div class="p-6 w-full flex-1 flex flex-col justify-between items-center space-y-5">

@@ -15,11 +15,14 @@ return new class extends Migration
             $table->text('deskripsi');
             $table->date('tanggal_pelaksanaan');
             $table->string('lokasi');
+
+            // Tambahkan kolom ini
+            $table->string('kategori_lomba');
+
             $table->string('poster')->nullable();
             $table->enum('tipe', ['Kejurnas', 'Open']);
             $table->enum('status', ['Buka', 'Tutup', 'Selesai'])->default('Buka');
 
-            // Kolom Baru yang wajib ada
             $table->integer('kuota_maksimal')->default(100);
             $table->dateTime('batas_pendaftaran');
             $table->string('thb_file')->nullable();

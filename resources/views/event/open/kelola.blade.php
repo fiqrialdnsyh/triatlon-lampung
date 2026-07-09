@@ -15,7 +15,17 @@
 
                 @if(session('success'))
                     <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl font-bold text-sm">
-                        ✓ {{ session('success') }}
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="mb-6 bg-red-50 border border-red-200 p-4 rounded-xl">
+                        <ul class="list-disc list-inside text-xs font-bold text-red-500/80 space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
                 @endif
 
@@ -46,7 +56,7 @@
 
                                 <div>
                                     <label class="block text-[9px] font-black text-navy/40 uppercase mb-1">Tanggal Pelaksanaan</label>
-                                    <input type="date" name="tanggal_pelaksanaan" value="{{ $event->tanggal_pelaksanaan }}" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
+                                    <input type="date" name="tanggal_pelaksanaan" value="{{ $event->tanggal_pelaksanaan }}" min="{{ date('Y-m-d') }}" onchange="sinkronkanBatasTanggal(this)" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
                                 </div>
 
                                 <div>
@@ -63,9 +73,14 @@
                                     <input type="text" name="lokasi" value="{{ $event->lokasi }}" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
                                 </div>
 
+                                <div class="md:col-span-2">
+                                    <label class="block text-[9px] font-black text-navy/40 uppercase mb-1">Kategori / Nomor Pertandingan</label>
+                                    <input type="text" name="kategori_lomba" value="{{ $event->kategori_lomba }}" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
+                                </div>
+
                                 <div>
                                     <label class="block text-[9px] font-black text-navy/40 uppercase mb-1">Batas Waktu Tutup</label>
-                                    <input type="datetime-local" name="batas_pendaftaran" value="{{ \Carbon\Carbon::parse($event->batas_pendaftaran)->format('Y-m-d\TH:i') }}" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
+                                    <input type="datetime-local" name="batas_pendaftaran" value="{{ \Carbon\Carbon::parse($event->batas_pendaftaran)->format('Y-m-d\TH:i') }}" min="{{ date('Y-m-d\TH:i') }}" max="{{ $event->tanggal_pelaksanaan }}T23:59" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
                                 </div>
 
                                 <div>
@@ -83,7 +98,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-[9px] font-black text-navy/60 uppercase mb-1">No. Rekening</label>
-                                        <input type="text" name="nomor_rekening" value="{{ $event->nomor_rekening }}" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
+                                        <input type="number" name="nomor_rekening" value="{{ $event->nomor_rekening }}" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs font-bold text-navy" required>
                                     </div>
                                     <div>
                                         <label class="block text-[9px] font-black text-navy/60 uppercase mb-1">Atas Nama</label>
@@ -118,7 +133,7 @@
 
                             <form action="{{ route('event.open.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus turnamen ini secara permanen?')" class="absolute top-6 right-6">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="text-[10px] bg-red-50 text-red-500 border border-red-200 px-3 py-1.5 rounded hover:bg-red-500 hover:text-white font-black uppercase transition-colors">
+                                <button type="submit" class="text-[10px] bg-red-50 text-red-500 border border-red-200 px-3 py-1.5 rounded hover:bg-red-500 hover:text-white font-black uppercase transition-colors pointer-events-auto">
                                     Hapus Event
                                 </button>
                             </form>
@@ -133,4 +148,18 @@
             </div>
         </div>
     </section>
+
+    <script>
+        function sinkronkanBatasTanggal(elementInput) {
+            // Mencari elemen form terdekat dari input tanggal yang sedang diubah
+            const formInduk = elementInput.closest('form');
+            const inputBatasDaftar = formInduk.querySelector('input[name="batas_pendaftaran"]');
+
+            if (elementInput.value) {
+                inputBatasDaftar.max = elementInput.value + 'T23:59';
+            } else {
+                inputBatasDaftar.removeAttribute('max');
+            }
+        }
+    </script>
 @endsection

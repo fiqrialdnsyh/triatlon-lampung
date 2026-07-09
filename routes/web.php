@@ -115,6 +115,12 @@ Route::get('/event/open/tiket/{qr_token}', [EventOpenController::class, 'showTik
 // Rute Verifikasi Pendaftaran Peserta (Harus Di Atas Rute Slug)
 Route::post('/event/open/verifikasi/{id}', [EventOpenController::class, 'verifikasi'])->name('event.open.verifikasi');
 
+// RUTE UNTUK SCANNER QR ABSENSI
+Route::post('/event/open/checkin/qr', [EventOpenController::class, 'checkIn'])->name('event.open.checkin');
+
+// RUTE BARU UNTUK CETAK PDF ABSENSI LAPANGAN
+Route::get('/event/open/checkin/{id}/cetak', [EventOpenController::class, 'printCheckIn'])->name('event.open.checkin.print');
+
 // Rute Publik Detail Event (Wildcard {slug} HARUS di paling bawah grup Event Open)
 Route::get('/event/open/{slug}', [EventOpenController::class, 'show'])->name('event.open.show');
 

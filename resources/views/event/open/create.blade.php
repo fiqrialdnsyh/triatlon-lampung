@@ -36,12 +36,17 @@
 
                         <div>
                             <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-2">Tanggal Pelaksanaan <span class="text-red-500">*</span></label>
-                            <input type="date" name="tanggal_pelaksanaan" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-semibold text-navy focus:outline-none focus:border-navy shadow-sm" required>
+                            <input type="date" id="tanggal_pelaksanaan" name="tanggal_pelaksanaan" min="{{ date('Y-m-d') }}" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-semibold text-navy focus:outline-none focus:border-navy shadow-sm" required>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-2">Lokasi Pertandingan <span class="text-red-500">*</span></label>
                             <input type="text" name="lokasi" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-semibold text-navy focus:outline-none focus:border-navy shadow-sm" required>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-2">Nomor Pertandingan / Kategori Lomba <span class="text-red-500">*</span></label>
+                            <input type="text" name="kategori_lomba" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-semibold text-navy focus:outline-none focus:border-navy shadow-sm" placeholder="Contoh: Aquathlon Standar Umum" required>
                         </div>
 
                         <div>
@@ -50,8 +55,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-2">Batas Waktu Penutupan Pendaftaran <span class="text-red-500">*</span></label>
-                            <input type="datetime-local" name="batas_pendaftaran" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-semibold text-navy focus:outline-none focus:border-navy shadow-sm" required>
+                            <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-2">Batas Penutupan Pendaftaran <span class="text-red-500">*</span></label>
+                            <input type="datetime-local" id="batas_pendaftaran" name="batas_pendaftaran" min="{{ date('Y-m-d\TH:i') }}" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-semibold text-navy focus:outline-none focus:border-navy shadow-sm" required>
                         </div>
                     </div>
 
@@ -65,7 +70,7 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-navy uppercase mb-1">Nomor Rekening <span class="text-red-500">*</span></label>
-                            <input type="text" name="nomor_rekening" placeholder="Contoh: 1234010000" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-semibold text-navy focus:outline-none focus:border-navy" required>
+                            <input type="number" name="nomor_rekening" placeholder="Contoh: 1234010000" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-semibold text-navy focus:outline-none focus:border-navy" required>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-navy uppercase mb-1">Atas Nama Pemilik <span class="text-red-500">*</span></label>
@@ -125,11 +130,24 @@
             row.innerHTML = `
                 <input type="text" name="nama_golongan[]" placeholder="Nama Golongan (Misal: Reguler)" class="w-1/2 bg-white border border-gray-300 rounded-md px-3 py-2 text-xs font-bold text-navy" required>
                 <input type="number" name="biaya_golongan[]" placeholder="Nominal Biaya" class="w-1/2 bg-white border border-gray-300 rounded-md px-3 py-2 text-xs font-bold text-navy" required>
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 p-2 hover:bg-red-50 rounded-md transition-colors">
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 p-2 hover:bg-red-50 rounded-md transition-colors" title="Hapus Golongan">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
             `;
             container.appendChild(row);
         }
+
+        // LOGIKA DINAMIS PEMBATASAN KALENDER HTML
+        const inputTanggalEvent = document.getElementById('tanggal_pelaksanaan');
+        const inputBatasDaftar = document.getElementById('batas_pendaftaran');
+
+        inputTanggalEvent.addEventListener('change', function() {
+            if (this.value) {
+                // Atur batas maksimal pendaftaran adalah jam 23:59 di hari pelaksanaan event
+                inputBatasDaftar.max = this.value + 'T23:59';
+            } else {
+                inputBatasDaftar.removeAttribute('max');
+            }
+        });
     </script>
 @endsection

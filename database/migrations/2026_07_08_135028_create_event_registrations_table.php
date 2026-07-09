@@ -13,13 +13,21 @@ return new class extends Migration
             $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-            // Data Lengkap Peserta Sesuai Revisi Baru
+            // Biodata Lengkap
             $table->string('nama_lengkap');
+            $table->string('nomor_ktp');
+            $table->string('tempat_lahir');
+            $table->date('tanggal_lahir');
+            $table->integer('usia'); // Akan diisi otomatis oleh sistem
+            $table->string('jenis_kelamin');
+            $table->string('golongan_darah');
+            $table->string('alamat');
+            $table->string('asal_daerah'); // Sekarang jadi input manual bebas
             $table->string('email');
             $table->string('nomor_telepon');
-            $table->integer('usia');
-            $table->string('jenis_kelamin');
-            $table->string('asal_daerah'); // Menggantikan asal_klub_daerah
+
+            // Data Perlombaan
+            $table->string('bib_name');
             $table->string('kategori_lomba');
 
             // Data Finansial & Validasi QR
@@ -28,7 +36,7 @@ return new class extends Migration
             $table->string('bukti_transfer');
             $table->string('qr_token')->unique()->nullable();
 
-            // Status & Catatan Admin
+            // Status
             $table->enum('status_pembayaran', ['Menunggu', 'Valid', 'Ditolak'])->default('Menunggu');
             $table->text('pesan_penolakan')->nullable();
 
