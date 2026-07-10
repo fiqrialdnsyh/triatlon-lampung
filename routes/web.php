@@ -35,22 +35,35 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 // ==========================================
 // 2. RUTE PELATIHAN
 // ==========================================
-Route::get('/pelatihan', [PelatihanController::class, 'index']);
-Route::get('/pelatihan/create', [PelatihanController::class, 'create']);
-Route::post('/pelatihan', [PelatihanController::class, 'store'])->name('pelatihan.store');
 
-// Manajemen Edit & Update Pelatihan
-Route::get('/pelatihan/{id}/edit', [PelatihanController::class, 'edit'])->name('pelatihan.edit');
-Route::put('/pelatihan/{id}', [PelatihanController::class, 'update'])->name('pelatihan.update');
+Route::get('/pelatihan', [PelatihanController::class, 'index'])->name('pelatihan.index');
 
-// Detail Pelatihan (Wildcard {id} HARUS di paling bawah grup Pelatihan)
-Route::get('/pelatihan/{id}', [PelatihanController::class, 'show']);
+Route::middleware('auth')->group(function () {
 
-// Rute Pendaftaran & Tiket
-Route::post('/pelatihan/{id}/daftar', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
-Route::get('/pelatihan/{id}/tiket', [PendaftaranController::class, 'cetakTiket'])->name('pendaftaran.tiket');
-Route::post('/pendaftaran/{id}/terima', [PendaftaranController::class, 'terima']);
-Route::post('/pendaftaran/{id}/tolak', [PendaftaranController::class, 'tolak']);
+    // Manajemen Pelatihan (Khusus Admin) — HARUS di atas wildcard {id}
+    Route::get('/pelatihan/create', [PelatihanController::class, 'create'])->name('pelatihan.create');
+    Route::post('/pelatihan', [PelatihanController::class, 'store'])->name('pelatihan.store');
+
+    // Check-In QR & Cetak PDF — HARUS di atas wildcard {id}
+    Route::post('/pelatihan/checkin/qr', [PelatihanController::class, 'checkIn'])->name('pelatihan.checkin');
+    Route::get('/pelatihan/checkin/{id}/cetak', [PelatihanController::class, 'printCheckIn'])->name('pelatihan.checkin.print');
+
+    Route::get('/pelatihan/{id}/edit', [PelatihanController::class, 'edit'])->name('pelatihan.edit');
+    Route::put('/pelatihan/{id}', [PelatihanController::class, 'update'])->name('pelatihan.update');
+
+    // Pendaftaran (Peserta)
+    Route::post('/pelatihan/{id}/daftar', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
+    Route::get('/pelatihan/{id}/tiket', [PendaftaranController::class, 'cetakTiket'])->name('pendaftaran.tiket');
+    Route::post('/pendaftaran/{id}/resubmit', [PendaftaranController::class, 'resubmit'])->name('pendaftaran.resubmit');
+
+    // Verifikasi Admin
+    Route::post('/pendaftaran/{id}/terima', [PendaftaranController::class, 'terima'])->name('pendaftaran.terima');
+    Route::post('/pendaftaran/{id}/tolak', [PendaftaranController::class, 'tolak'])->name('pendaftaran.tolak');
+    Route::post('/pendaftaran/{id}/batal', [PendaftaranController::class, 'batal'])->name('pendaftaran.batal');
+});
+
+// Detail Pelatihan (Wildcard {id} — HARUS PALING BAWAH di grup Pelatihan)
+Route::get('/pelatihan/{id}', [PelatihanController::class, 'show'])->name('pelatihan.show');
 
 
 // ==========================================
@@ -129,6 +142,14 @@ Route::get('/event/open/{slug}', [EventOpenController::class, 'show'])->name('ev
 Route::get('/event/kejurnas', [EventKejurnasController::class, 'index'])->name('event.kejurnas.index');
 Route::get('/event/kejurnas/tambah', [EventKejurnasController::class, 'create'])->name('event.kejurnas.create');
 Route::post('/event/kejurnas/simpan', [EventKejurnasController::class, 'store'])->name('event.kejurnas.store');
+
+// RUTE BARU: Histori, Edit, dan Update
+Route::get('/event/kejurnas/histori/pendaftaran', [EventKejurnasController::class, 'history'])->name('event.kejurnas.history');
+Route::get('/event/kejurnas/{id}/edit', [EventKejurnasController::class, 'edit'])->name('event.kejurnas.edit');
+Route::put('/event/kejurnas/{id}', [EventKejurnasController::class, 'update'])->name('event.kejurnas.update');
+
+Route::post('/event/kejurnas/registrasi/{id}/resubmit', [EventKejurnasController::class, 'resubmit'])->name('event.kejurnas.resubmit');
+Route::get('/event/kejurnas/checkin/{id}/cetak', [EventKejurnasController::class, 'printCheckIn'])->name('event.kejurnas.checkin.print');
 Route::get('/event/kejurnas/{slug}', [EventKejurnasController::class, 'show'])->name('event.kejurnas.show');
 Route::post('/event/kejurnas/{id}/register', [EventKejurnasController::class, 'register'])->name('event.kejurnas.register');
 Route::post('/event/kejurnas/verifikasi/{id}', [EventKejurnasController::class, 'verifikasi'])->name('event.kejurnas.verifikasi');

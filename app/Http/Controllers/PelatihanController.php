@@ -3,120 +3,179 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pelatihan;
+use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PelatihanController extends Controller
 {
-    // 1. Menampilkan daftar pelatihan
+    private function autoUpdateStatusSelesai($pelatihan)
+    {
+        $H_plus_satu = Carbon::parse($pelatihan->tanggal_pelaksanaan)->addDay()->endOfDay();
+        if (Carbon::now()->greaterThan($H_plus_satu) && $pelatihan->status !== 'Selesai') {
+            $pelatihan->status = 'Selesai';
+            $pelatihan->save();
+        }
+    }
+
     public function index()
     {
-        // Tambahkan with('pendaftarans') agar bisa menghitung jumlah pendaftar untuk logika kuota
-        $pelatihans = Pelatihan::with('pendaftarans')->latest()->get();
+        $pelatihans = Pelatihan::latest()->get();
+
+        foreach ($pelatihans as $pelatihan) {
+            $this->autoUpdateStatusSelesai($pelatihan);
+        }
+
         return view('pelatihan.index', compact('pelatihans'));
     }
 
-    // 2. Menampilkan form tambah (Hanya Admin)
     public function create()
     {
         if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
-            return redirect('/pelatihan');
+            return abort(403);
         }
         return view('pelatihan.create');
     }
 
-    // 3. Menyimpan data ke database
-    public function store(Request $request)
-    {
-        $biaya = [];
-        if ($request->has('nama_golongan') && $request->has('biaya_golongan')) {
-            foreach ($request->nama_golongan as $index => $nama) {
-                if (!empty($nama)) {
-                    $biaya[] = ['nama' => $nama, 'nominal' => $request->biaya_golongan[$index] ?? 0];
-                }
-            }
-        }
-
-        $konfigurasi_form = [
-            'pekerjaan' => $request->has('form_pekerjaan'),
-            'pengalaman' => $request->has('form_pengalaman'),
-            'ukuran_baju' => $request->has('form_ukuran_baju'),
-            'surat_rekomendasi' => $request->has('form_surat_rekomendasi'),
-        ];
-
-        Pelatihan::create([
-            'judul' => $request->judul,
-            'deskripsi' => $request->deskripsi,
-            'tempat' => $request->tempat, // Simpan Tempat
-            'kuota' => $request->kuota, // Simpan Kuota
-            'tanggal_pelaksanaan' => $request->tanggal_pelaksanaan,
-            'batas_pendaftaran' => $request->batas_pendaftaran,
-            'status' => $request->status ?? 'Buka',
-            'rekening' => $request->rekening,
-            'biaya' => $biaya,
-            'konfigurasi_form' => $konfigurasi_form,
-        ]);
-
-        return redirect('/pelatihan');
-    }
-
-    // 4. Menampilkan detail pelatihan (Admin vs Publik)
-    public function show($id)
-    {
-        $pelatihan = Pelatihan::with('pendaftarans')->findOrFail($id);
-
-        // Jika yang login adalah Admin, arahkan ke halaman kelola pendaftar
-        if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
-            return view('pelatihan.admin_show', compact('pelatihan'));
-        }
-
-        // Jika peserta biasa, arahkan ke halaman form pendaftaran
-        return view('pelatihan.show', compact('pelatihan'));
-    }
-
-    // 5. Menampilkan form edit (Hanya Admin)
     public function edit($id)
     {
         if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
-            return redirect('/pelatihan');
+            return abort(403);
         }
+
         $pelatihan = Pelatihan::findOrFail($id);
         return view('pelatihan.edit', compact('pelatihan'));
     }
 
-    // 6. Memperbarui data pelatihan ke database
     public function update(Request $request, $id)
+    {
+        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+            return abort(403);
+        }
+
+        $pelatihan = Pelatihan::findOrFail($id);
+
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'tanggal_pelaksanaan' => 'required|date',
+            'batas_pendaftaran' => 'required|date',
+            'link_wa_grup' => 'nullable|url',
+        ]);
+
+        $pelatihan->judul = $request->judul;
+        $pelatihan->tanggal_pelaksanaan = $request->tanggal_pelaksanaan;
+        $pelatihan->batas_pendaftaran = $request->batas_pendaftaran;
+        $pelatihan->link_wa_grup = $request->link_wa_grup;
+
+        $pelatihan->save();
+
+        return redirect('/pelatihan')->with('success', 'Data Pelatihan berhasil diperbarui.');
+    }
+
+    public function show($id)
     {
         $pelatihan = Pelatihan::findOrFail($id);
 
-        $biaya = [];
-        if ($request->has('nama_golongan') && $request->has('biaya_golongan')) {
-            foreach ($request->nama_golongan as $index => $nama) {
-                if (!empty($nama)) {
-                    $biaya[] = ['nama' => $nama, 'nominal' => $request->biaya_golongan[$index] ?? 0];
-                }
-            }
+        $this->autoUpdateStatusSelesai($pelatihan);
+
+        $kuotaTerisi = Pendaftaran::where('pelatihan_id', $pelatihan->id)
+                            ->whereIn('status', ['Menunggu', 'Diterima'])
+                            ->count();
+
+        $allRegistrations = [];
+        if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
+            $allRegistrations = Pendaftaran::where('pelatihan_id', $pelatihan->id)->latest()->get();
         }
 
-        $konfigurasi_form = [
-            'pekerjaan' => $request->has('form_pekerjaan'),
-            'pengalaman' => $request->has('form_pengalaman'),
-            'ukuran_baju' => $request->has('form_ukuran_baju'),
-            'surat_rekomendasi' => $request->has('form_surat_rekomendasi'),
-        ];
+        return view('pelatihan.show', compact('pelatihan', 'kuotaTerisi', 'allRegistrations'));
+    }
 
-        $pelatihan->update([
-            'judul' => $request->judul,
-            'deskripsi' => $request->deskripsi,
-            'tempat' => $request->tempat, // Update Tempat
-            'kuota' => $request->kuota, // Update Kuota
-            'tanggal_pelaksanaan' => $request->tanggal_pelaksanaan,
-            'batas_pendaftaran' => $request->batas_pendaftaran,
-            'status' => $request->status ?? 'Buka',
-            'rekening' => $request->rekening,
-            'biaya' => $biaya,
-            'konfigurasi_form' => $konfigurasi_form,
+    public function store(Request $request)
+    {
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'tanggal_pelaksanaan' => 'required|date|after_or_equal:today',
+            'batas_pendaftaran' => 'required|date|before:tanggal_pelaksanaan',
+            'kuota_maksimal' => 'required|numeric|min:1',
+            'lokasi' => 'required|string|max:255',
+            'rekening' => 'required|string|max:255',
+            'link_wa_grup' => 'required|url',
         ]);
 
-        return redirect('/pelatihan')->with('success', 'Pelatihan berhasil diperbarui!');
+        $pelatihan = new Pelatihan();
+        $pelatihan->judul = $request->judul;
+        $pelatihan->deskripsi = $request->deskripsi;
+        $pelatihan->tanggal_pelaksanaan = $request->tanggal_pelaksanaan;
+        $pelatihan->batas_pendaftaran = Carbon::parse($request->batas_pendaftaran);
+        $pelatihan->kuota_maksimal = $request->kuota_maksimal;
+        $pelatihan->lokasi = $request->lokasi;
+        $pelatihan->rekening = $request->rekening;
+        $pelatihan->link_wa_grup = $request->link_wa_grup;
+        $pelatihan->status = 'Buka';
+
+        if ($request->has('nama_golongan') && $request->has('biaya_golongan')) {
+            $biayaArray = [];
+            foreach ($request->nama_golongan as $index => $nama) {
+                if (!empty($nama) && isset($request->biaya_golongan[$index])) {
+                    $biayaArray[] = [
+                        'nama' => $nama,
+                        'nominal' => $request->biaya_golongan[$index],
+                    ];
+                }
+            }
+            $pelatihan->biaya = count($biayaArray) > 0 ? $biayaArray : null;
+        }
+
+        if ($request->hasFile('poster')) {
+            $file = $request->file('poster');
+            $filename = time() . '_pelatihan.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/pelatihan/poster'), $filename);
+            $pelatihan->poster = 'uploads/pelatihan/poster/' . $filename;
+        }
+
+        $pelatihan->save();
+
+        return redirect('/pelatihan')->with('success', 'Master Pelatihan berhasil dipublikasikan!');
+    }
+
+    // Check-in peserta via scan QR tiket (pakai model Pendaftaran, bukan PelatihanRegistration)
+    public function checkIn(Request $request)
+    {
+        $pendaftaran = Pendaftaran::where('qr_token', $request->qr_token)
+                            ->where('pelatihan_id', $request->pelatihan_id)
+                            ->first();
+
+        if (!$pendaftaran) {
+            return response()->json(['success' => false, 'message' => 'QR Code tidak terdaftar pada pelatihan ini.']);
+        }
+        if ($pendaftaran->status !== 'Diterima') {
+            return response()->json(['success' => false, 'message' => 'Peserta belum diverifikasi/diterima.']);
+        }
+        if ($pendaftaran->waktu_checkin !== null) {
+            return response()->json(['success' => false, 'message' => 'Peserta sudah absen sebelumnya.']);
+        }
+
+        $pendaftaran->waktu_checkin = Carbon::now();
+        $pendaftaran->save();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'nama' => $pendaftaran->nama_lengkap,
+                'kategori' => 'Peserta Pelatihan',
+            ],
+        ]);
+    }
+
+    public function printCheckIn($id)
+    {
+        $pelatihan = Pelatihan::findOrFail($id);
+        $checkins = Pendaftaran::where('pelatihan_id', $pelatihan->id)
+                        ->whereNotNull('waktu_checkin')
+                        ->orderBy('waktu_checkin', 'asc')
+                        ->get();
+
+        return view('pelatihan.print-checkin', compact('pelatihan', 'checkins'));
     }
 }

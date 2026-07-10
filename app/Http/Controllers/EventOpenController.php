@@ -145,7 +145,7 @@ class EventOpenController extends Controller
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date|before:today',
             'jenis_kelamin' => 'required|in:Putra,Putri',
-            'golongan_darah' => 'required|in:A,B,AB,O,Tidak Tahu',
+            'golongan_darah' => 'required|in:A+,A-,B+,B-,AB+,AB-,O+,O-,Tidak Tahu',
             'alamat' => 'required|string',
             'asal_daerah' => 'required|string|max:255',
             'email' => 'required|email|max:255',

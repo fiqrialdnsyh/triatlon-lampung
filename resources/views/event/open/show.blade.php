@@ -324,14 +324,14 @@
                                             <div>
                                                 <label class="block text-[10px] font-black text-navy uppercase tracking-widest mb-1">Golongan Darah</label>
                                                 <select name="golongan_darah" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-xs font-bold text-navy focus:outline-none focus:border-navy" required>
-                                                    <option value="A">A Positif (A+)</option>
-                                                    <option value="A">A Negatif (A-)</option>
-                                                    <option value="B">B Positif (B+)</option>
-                                                    <option value="B">B Negatif (B-)</option>
-                                                    <option value="AB">AB Positif (AB+)</option>
-                                                    <option value="AB">AB Negatif (AB-)</option>
-                                                    <option value="O">O Positif (O+)</option>
-                                                    <option value="O">O Negatif (O-)</option>
+                                                    <option value="A+">A Positif (A+)</option>
+                                                    <option value="A-">A Negatif (A-)</option>
+                                                    <option value="B+">B Positif (B+)</option>
+                                                    <option value="B-">B Negatif (B-)</option>
+                                                    <option value="AB+">AB Positif (AB+)</option>
+                                                    <option value="AB-">AB Negatif (AB-)</option>
+                                                    <option value="O+">O Positif (O+)</option>
+                                                    <option value="O-">O Negatif (O-)</option>
                                                     <option value="Tidak Tahu">Tidak Tahu</option>
                                                 </select>
                                             </div>

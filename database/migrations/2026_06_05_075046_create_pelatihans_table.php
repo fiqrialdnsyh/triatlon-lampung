@@ -17,13 +17,13 @@ return new class extends Migration
         $table->text('deskripsi');
         $table->date('tanggal_pelaksanaan');
         $table->date('batas_pendaftaran');
-        $table->string('status'); // 'Buka' atau 'Tutup'
-        $table->json('biaya')->nullable(); // Menyimpan data golongan & harga dinamis
+        $table->string('status');
+        $table->json('biaya')->nullable();
         $table->string('rekening');
-        $table->json('konfigurasi_form')->nullable(); // Menyimpan checklist form
+        $table->json('konfigurasi_form')->nullable();
+        $table->string('lokasi');           // sudah diganti dari 'tempat'
+        $table->integer('kuota_maksimal');  // sudah diganti dari 'kuota'
         $table->timestamps();
-        $table->string('tempat'); // Kolom baru
-        $table->integer('kuota');
     });
 }
 
