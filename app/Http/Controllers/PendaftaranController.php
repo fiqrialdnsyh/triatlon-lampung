@@ -59,6 +59,8 @@ class PendaftaranController extends Controller
                     'surat_rekomendasi' => $suratPath,
                     'status' => 'Menunggu',
                     'alasan_ditolak' => null,
+                    // Penambahan pengecekan QR Token di sini
+                    'qr_token' => $pendaftaranLama->qr_token ?? 'PLT-' . strtoupper(Str::random(6)) . '-' . time(),
                 ]);
                 return redirect('/pelatihan/' . $pelatihanId)->with('success', 'Pendaftaran berhasil dikirim ulang.');
             }
@@ -120,6 +122,8 @@ class PendaftaranController extends Controller
             'golongan_biaya' => $request->golongan_biaya,
             'status' => 'Menunggu',
             'alasan_ditolak' => null,
+            // Penambahan pengecekan QR Token di sini juga
+            'qr_token' => $pendaftaran->qr_token ?? 'PLT-' . strtoupper(Str::random(6)) . '-' . time(),
         ];
 
         if ($request->hasFile('bukti_pembayaran')) {
@@ -146,7 +150,15 @@ class PendaftaranController extends Controller
         if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
 
         $pendaftaran = Pendaftaran::findOrFail($id);
-        $pendaftaran->update(['status' => 'Diterima', 'alasan_ditolak' => null]);
+
+        // Generate QR Token otomatis jika peserta lama belum memilikinya
+        $qrToken = $pendaftaran->qr_token ?? 'PLT-' . strtoupper(\Illuminate\Support\Str::random(6)) . '-' . time();
+
+        $pendaftaran->update([
+            'status' => 'Diterima',
+            'alasan_ditolak' => null,
+            'qr_token' => $qrToken
+        ]);
 
         return back()->with('success', 'Pendaftaran atas nama ' . $pendaftaran->nama_lengkap . ' berhasil DITERIMA.');
     }

@@ -11,4 +11,9 @@ class Event extends Model
 
     // Mengizinkan semua kolom diisi secara massal, kecuali kolom 'id'
     protected $guarded = ['id'];
+
+    public function mainEvent()
+    {
+        return $this->belongsTo(MainEvent::class, 'main_event_id');
+    }
 }

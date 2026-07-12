@@ -8,6 +8,8 @@
 
             @if (auth()->check() && auth()->user()->email === 'admin@triatlon.test')
                 <div class="mb-12 bg-[#F8F9FA] rounded-[2rem] p-8 shadow-xl">
+
+                    {{-- HEADER: Cetak Absensi & Scan QR --}}
                     <div
                         class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
@@ -27,17 +29,81 @@
                         </div>
                     </div>
 
+                    {{-- TABEL 1: HASIL CHECK-IN (KEHADIRAN) --}}
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden mb-6">
+                        <h3 class="font-black text-navy uppercase text-sm mb-4 pb-2 border-b border-gray-100">
+                            Peserta Sudah Check-In ({{ count($checkedInList) }} Orang)
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse min-w-[1000px]">
+                                <thead>
+                                    <tr class="bg-navy text-white uppercase font-bold tracking-wider">
+                                        <th class="p-3 rounded-l-md w-[30%]">Data Peserta</th>
+                                        <th class="p-3 w-[15%]">Golongan</th>
+                                        <th class="p-3 w-[15%]">Pekerjaan</th>
+                                        <th class="p-3 w-[15%]">Asal Daerah</th>
+                                        <th class="p-3 text-center w-[10%]">Ukuran Baju</th>
+                                        <th class="p-3 text-center rounded-r-md w-[15%]">Waktu Hadir</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y-2 divide-gray-200 font-semibold text-navy">
+                                    @forelse($checkedInList as $hadir)
+                                        <tr class="odd:bg-white even:bg-gray-50">
+                                            <td class="p-4">
+                                                <p class="font-black uppercase text-sm text-navy mb-1">
+                                                    {{ $hadir->nama_lengkap }}</p>
+                                                <div class="grid grid-cols-2 gap-2 text-[10px] mt-2">
+                                                    <p><span class="text-gray-400 font-bold uppercase">Usia:</span>
+                                                        {{ $hadir->usia }} Thn</p>
+                                                    <p><span class="text-gray-400 font-bold uppercase">Gender:</span>
+                                                        {{ $hadir->jenis_kelamin }}</p>
+                                                    <p class="col-span-2"><span
+                                                            class="text-gray-400 font-bold uppercase">Pengalaman:</span>
+                                                        {{ $hadir->pengalaman_melatih }}</p>
+                                                </div>
+                                            </td>
+                                            <td class="p-4 align-top pt-5">
+                                                <span
+                                                    class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-gray-200">
+                                                    {{ $hadir->golongan_biaya }}
+                                                </span>
+                                            </td>
+                                            <td class="p-4 align-top pt-5">{{ $hadir->pekerjaan }}</td>
+                                            <td class="p-4 align-top pt-5">{{ $hadir->asal_daerah }}</td>
+                                            <td class="p-4 text-center align-top pt-5">
+                                                <span
+                                                    class="inline-block bg-navy/5 text-navy px-2 py-1 rounded font-black text-[10px]">{{ $hadir->ukuran_baju }}</span>
+                                            </td>
+                                            <td class="p-4 text-center align-top pt-5">
+                                                <span class="text-green-600 font-black font-mono text-[10px]">
+                                                    {{ \Carbon\Carbon::parse($hadir->waktu_checkin)->format('d/m/Y H:i:s') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6"
+                                                class="p-6 text-center text-navy/40 uppercase font-bold tracking-widest">
+                                                Belum ada peserta yang check-in.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- TABEL 2: VALIDASI PENDAFTARAN PESERTA --}}
                     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden">
                         <h3 class="font-black text-navy uppercase text-sm mb-4 pb-2 border-b border-gray-100">Daftar
                             Pengajuan Registrasi Peserta</h3>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse min-w-[900px]">
+                            <table class="w-full text-left text-xs border-collapse min-w-[800px]">
                                 <thead>
                                     <tr class="bg-navy text-white uppercase font-bold tracking-wider">
-                                        <th class="p-3 rounded-l-md w-[40%]">Data Peserta</th>
-                                        <th class="p-3 w-[20%]">Golongan & Bukti</th>
-                                        <th class="p-3 text-center w-[15%]">Waktu Hadir</th>
-                                        <th class="p-3 text-center rounded-r-md w-[25%]">Aksi Validasi</th>
+                                        <th class="p-3 rounded-l-md w-[45%]">Data Peserta</th>
+                                        <th class="p-3 w-[25%]">Golongan & Bukti</th>
+                                        <th class="p-3 text-center rounded-r-md w-[30%]">Aksi Validasi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y-2 divide-gray-200 font-semibold text-navy">
@@ -67,20 +133,12 @@
                                                     class="block mt-2 text-blue-600 hover:text-blue-800 underline font-bold text-[10px] cursor-pointer">
                                                     Cek Bukti TF
                                                 </button>
-
                                                 @if ($reg->surat_rekomendasi)
-                                                    <a href="{{ asset('storage/' . $reg->surat_rekomendasi) }}"
-                                                        target="_blank"
-                                                        class="block mt-1 text-green-600 hover:text-green-800 underline font-bold text-[10px]">Cek
-                                                        Surat Rekomendasi</a>
-                                                @endif
-                                            </td>
-                                            <td class="p-4 text-center align-top pt-5">
-                                                @if ($reg->waktu_checkin)
-                                                    <span
-                                                        class="text-green-600 font-black font-mono text-[10px]">{{ \Carbon\Carbon::parse($reg->waktu_checkin)->format('d/m/Y H:i:s') }}</span>
-                                                @else
-                                                    <span class="text-gray-400 font-bold text-[10px]">Belum Hadir</span>
+                                                    <button type="button" data-url="{{ asset($reg->surat_rekomendasi) }}"
+                                                        onclick="openPdfModal(this.dataset.url)"
+                                                        class="block mt-1 text-green-600 hover:text-green-800 underline font-bold text-[10px] cursor-pointer">
+                                                        Cek Surat Rekomendasi
+                                                    </button>
                                                 @endif
                                             </td>
                                             <td class="p-4 align-top pt-5">
@@ -123,7 +181,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4"
+                                            <td colspan="3"
                                                 class="p-6 text-center text-navy/40 uppercase font-bold tracking-widest">
                                                 Belum ada peserta.</td>
                                         </tr>
@@ -132,6 +190,7 @@
                             </table>
                         </div>
                     </div>
+
                 </div>
             @endif
 
@@ -465,16 +524,31 @@
 
     <div id="proofModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-navy/80 backdrop-blur-sm cursor-pointer" onclick="closeProofModal()"></div>
-        <div
-            class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden max-h-[85vh] animate-fadeIn">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden max-h-[85vh] animate-fadeIn">
             <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50 shrink-0">
                 <h3 class="font-black text-navy uppercase text-xs tracking-wider">Bukti Resi Pembayaran</h3>
-                <button onclick="closeProofModal()"
-                    class="text-red-500 font-black text-xs uppercase hover:underline cursor-pointer">Tutup</button>
+                <button onclick="closeProofModal()" class="text-red-500 font-black text-xs uppercase hover:underline cursor-pointer">Tutup</button>
             </div>
             <div class="p-6 flex-1 overflow-y-auto bg-gray-100 flex items-center justify-center">
-                <img id="proofImage" src="" alt="Bukti Transfer"
-                    class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-md border border-gray-200">
+                <img id="proofImage" src="" alt="Bukti Transfer" class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-md border border-gray-200">
+            </div>
+        </div>
+    </div>
+    <div id="pdfModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-navy/80 backdrop-blur-sm cursor-pointer" onclick="closePdfModal()"></div>
+        <div
+            class="bg-white w-full max-w-3xl h-[85vh] rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden animate-fadeIn">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50 shrink-0">
+                <h3 class="font-black text-navy uppercase text-xs tracking-wider">Surat Rekomendasi MGMP</h3>
+                <div class="flex items-center gap-4">
+                    <a id="pdfDownloadLink" href="" target="_blank"
+                        class="text-navy font-black text-[10px] uppercase hover:underline">Buka Tab Baru</a>
+                    <button onclick="closePdfModal()"
+                        class="text-red-500 font-black text-xs uppercase hover:underline cursor-pointer">Tutup</button>
+                </div>
+            </div>
+            <div class="flex-1 bg-gray-100">
+                <iframe id="pdfFrame" src="" class="w-full h-full border-0"></iframe>
             </div>
         </div>
     </div>
@@ -586,6 +660,22 @@
         function closeProofModal() {
             document.getElementById('proofModal').classList.replace('flex', 'hidden');
             document.getElementById('proofImage').src = '';
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+
+    <script>
+        function openPdfModal(pdfUrl) {
+            document.getElementById('pdfFrame').src = pdfUrl;
+            document.getElementById('pdfDownloadLink').href = pdfUrl;
+            document.getElementById('pdfModal').classList.remove('hidden');
+            document.getElementById('pdfModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdfModal').classList.replace('flex', 'hidden');
+            document.getElementById('pdfFrame').src = '';
             document.body.style.overflow = 'auto';
         }
     </script>

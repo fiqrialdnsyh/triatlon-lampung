@@ -13,7 +13,7 @@ class Pendaftaran extends Model
         'user_id', 'pelatihan_id', 'nama_lengkap', 'jenis_kelamin', 'usia',
         'pengalaman_melatih', 'pengalaman_lainnya', 'pekerjaan', 'asal_daerah',
         'ukuran_baju', 'golongan_biaya', 'bukti_pembayaran', 'surat_rekomendasi',
-        'status', 'alasan_ditolak'
+        'status', 'alasan_ditolak', 'qr_token',
     ];
 
     public function pelatihan()

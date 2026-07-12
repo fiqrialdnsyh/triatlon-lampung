@@ -108,7 +108,7 @@ class EventOpenController extends Controller
             ->whereIn('status_pembayaran', ['Menunggu', 'Valid'])
             ->count();
 
-        $allRegistrations = [];
+        $allRegistrations = collect();
         if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
             $allRegistrations = EventRegistration::where('event_id', $event->id)->latest()->get();
         }

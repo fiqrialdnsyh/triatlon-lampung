@@ -19,13 +19,11 @@
         </div>
     </section>
 
-    <!-- HUB PENGELOLAAN ADMINISTRATOR -->
     @auth
         @if(auth()->user()->email == 'admin@triatlon.test')
             <div class="bg-white border-b border-gray-200 py-8 px-4 md:px-16 relative shadow-sm">
                 <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    <!-- Form Buat Akun Kontingen -->
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <h3 class="font-black text-navy uppercase text-xs tracking-wider border-b border-gray-200 pb-2 mb-4">Buat Akun Kontingen Baru</h3>
                         <form action="{{ route('event.kejurnas.buat_kontingen') }}" method="POST" class="space-y-3">
@@ -46,7 +44,6 @@
                         </form>
                     </div>
 
-                    <!-- Tabel Pemantauan Akun Kontingen Aktif -->
                     <div class="lg:col-span-2 bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
                         <div>
                             <h3 class="font-black text-navy uppercase text-xs tracking-wider border-b border-gray-200 pb-2 mb-4">Daftar Akun Kontingen Aktif Sistem</h3>
@@ -81,7 +78,6 @@
         @endif
     @endauth
 
-    <!-- GRID MASTER EVENT KEJURNAS -->
     <section class="bg-[#F8F9FA] py-16 px-4 md:px-16 min-h-screen">
         <div class="max-w-6xl mx-auto">
 

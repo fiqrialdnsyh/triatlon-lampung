@@ -63,7 +63,7 @@
     </style>
 </head>
 
-<body class="bg-navy p-4 md:p-12 min-h-screen flex flex-col items-center justify-center">
+<body class="bg-navy p-4 md:p-12 min-h-screen flex flex-col items-center justify-center relative">
 
     <div class="w-full max-w-3xl flex justify-between items-center mb-6 no-print">
         <a href="{{ url('/pelatihan/' . $pendaftaran->pelatihan_id) }}"
@@ -160,30 +160,49 @@
             </div>
 
             <div class="w-full flex flex-col items-center mt-6 md:mt-0">
-                <div class="bg-white p-3 rounded-xl mb-2">
-                    <div id="qrcode-box" class="w-24 h-24 flex items-center justify-center"></div>
+                <button type="button" onclick="openZoomModal()" title="Perbesar QR Code" class="bg-white p-3 rounded-xl mb-2 no-print hover:scale-105 transition-transform cursor-pointer shadow-md">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $pendaftaran->qr_token }}" alt="QR Code" class="w-24 h-24 object-contain">
+                </button>
+
+                <div class="hidden print:block bg-white p-3 rounded-xl mb-2">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $pendaftaran->qr_token }}" alt="QR Code" class="w-24 h-24 object-contain">
                 </div>
-                <span class="text-[9px] font-bold tracking-widest text-white/50 uppercase">SCAN FOR CHECK-IN</span>
+
+                <span class="text-[9px] font-bold tracking-widest text-white/50 uppercase mt-2">SCAN FOR CHECK-IN</span>
                 <span
-                    class="mt-2 font-mono text-[9px] font-black text-white/70 tracking-widest">{{ $pendaftaran->qr_token }}</span>
+                    class="mt-1 font-mono text-[10px] font-black text-white/70 tracking-widest">{{ $pendaftaran->qr_token }}</span>
             </div>
 
         </div>
     </div>
 
-    <p class="mt-4 text-center text-xs font-semibold text-white/40 max-w-md no-print">Tip: Saat jendela cetak terbuka,
-        centang rincian opsi "Background graphics" agar warna latar belakang tiket tetap muncul sempurna.</p>
+    <p class="mt-4 text-center text-xs font-semibold text-white/40 max-w-md no-print">Tip: Saat jendela cetak terbuka, centang rincian opsi "Background graphics" agar warna latar belakang tiket tetap muncul sempurna. Klik gambar QR Code untuk memperbesar.</p>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <div id="zoomModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 no-print">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm cursor-pointer" onclick="closeZoomModal()"></div>
+        <div class="bg-white p-8 rounded-3xl shadow-2xl relative z-10 flex flex-col items-center animate-fadeIn max-w-sm w-full">
+            <button onclick="closeZoomModal()" class="absolute top-4 right-5 text-gray-400 hover:text-red-500 font-black text-xl cursor-pointer transition-colors">&times;</button>
+            <h3 class="font-black text-navy uppercase text-lg tracking-widest mb-6 border-b-2 border-yellow pb-2">Tunjukkan ke Panitia</h3>
+
+            <div class="bg-gray-100 p-4 rounded-xl border-2 border-navy shadow-inner">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ $pendaftaran->qr_token }}" alt="QR Code Besar" class="w-64 h-64 object-contain">
+            </div>
+
+            <p class="mt-6 font-mono text-sm font-black text-navy tracking-widest bg-gray-100 px-4 py-2 rounded-lg border border-gray-300">{{ $pendaftaran->qr_token }}</p>
+        </div>
+    </div>
+
     <script>
-        new QRCode(document.getElementById('qrcode-box'), {
-            text: "{{ $pendaftaran->qr_token }}",
-            width: 96,
-            height: 96,
-            colorDark: "#0B1528",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+        function openZoomModal() {
+            document.getElementById('zoomModal').classList.remove('hidden');
+            document.getElementById('zoomModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeZoomModal() {
+            document.getElementById('zoomModal').classList.replace('flex', 'hidden');
+            document.body.style.overflow = 'auto';
+        }
     </script>
 
 </body>

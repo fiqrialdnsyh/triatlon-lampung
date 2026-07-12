@@ -47,6 +47,7 @@ class PelatihanController extends Controller
         return view('pelatihan.edit', compact('pelatihan'));
     }
 
+    // 4. Memproses Pembaruan Data Edit Pelatihan
     public function update(Request $request, $id)
     {
         if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
@@ -57,15 +58,40 @@ class PelatihanController extends Controller
 
         $request->validate([
             'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
             'tanggal_pelaksanaan' => 'required|date',
-            'batas_pendaftaran' => 'required|date',
-            'link_wa_grup' => 'nullable|url',
+            'batas_pendaftaran' => 'required|date|before:tanggal_pelaksanaan',
+            'kuota_maksimal' => 'required|numeric|min:1',
+            'lokasi' => 'required|string|max:255',
+            'rekening' => 'required|string|max:255',
+            'link_wa_grup' => 'required|url',
+            'status' => 'required|in:Buka,Tutup,Selesai'
         ]);
 
         $pelatihan->judul = $request->judul;
+        $pelatihan->deskripsi = $request->deskripsi;
         $pelatihan->tanggal_pelaksanaan = $request->tanggal_pelaksanaan;
-        $pelatihan->batas_pendaftaran = $request->batas_pendaftaran;
+        $pelatihan->batas_pendaftaran = \Carbon\Carbon::parse($request->batas_pendaftaran);
+        $pelatihan->kuota_maksimal = $request->kuota_maksimal;
+        $pelatihan->lokasi = $request->lokasi;
+        $pelatihan->rekening = $request->rekening;
         $pelatihan->link_wa_grup = $request->link_wa_grup;
+        $pelatihan->status = $request->status;
+
+        // Memproses ulang biaya jika ada perubahan
+        if ($request->has('nama_golongan') && $request->has('biaya_golongan')) {
+            $biayaArray = [];
+            foreach ($request->nama_golongan as $index => $nama) {
+                if (!empty($nama) && isset($request->biaya_golongan[$index])) {
+                    $biayaArray[] = [
+                        'nama' => $nama,
+                        'nominal' => $request->biaya_golongan[$index]
+                    ];
+                }
+            }
+            // Karena model Pelatihan mungkin belum men-cast otomatis, kita gunakan array
+            $pelatihan->biaya = count($biayaArray) > 0 ? $biayaArray : null;
+        }
 
         $pelatihan->save();
 
@@ -79,15 +105,22 @@ class PelatihanController extends Controller
         $this->autoUpdateStatusSelesai($pelatihan);
 
         $kuotaTerisi = Pendaftaran::where('pelatihan_id', $pelatihan->id)
-                            ->whereIn('status', ['Menunggu', 'Diterima'])
-                            ->count();
+            ->whereIn('status', ['Menunggu', 'Diterima'])
+            ->count();
 
         $allRegistrations = [];
+        $checkedInList = [];
+
         if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
             $allRegistrations = Pendaftaran::where('pelatihan_id', $pelatihan->id)->latest()->get();
+
+            $checkedInList = Pendaftaran::where('pelatihan_id', $pelatihan->id)
+                ->whereNotNull('waktu_checkin')
+                ->orderBy('waktu_checkin', 'desc')
+                ->get();
         }
 
-        return view('pelatihan.show', compact('pelatihan', 'kuotaTerisi', 'allRegistrations'));
+        return view('pelatihan.show', compact('pelatihan', 'kuotaTerisi', 'allRegistrations', 'checkedInList'));
     }
 
     public function store(Request $request)
@@ -143,8 +176,8 @@ class PelatihanController extends Controller
     public function checkIn(Request $request)
     {
         $pendaftaran = Pendaftaran::where('qr_token', $request->qr_token)
-                            ->where('pelatihan_id', $request->pelatihan_id)
-                            ->first();
+            ->where('pelatihan_id', $request->pelatihan_id)
+            ->first();
 
         if (!$pendaftaran) {
             return response()->json(['success' => false, 'message' => 'QR Code tidak terdaftar pada pelatihan ini.']);
@@ -168,13 +201,29 @@ class PelatihanController extends Controller
         ]);
     }
 
+    // Menampilkan Halaman Riwayat Pelatihan Peserta
+    public function history()
+    {
+        if (!auth()->check()) {
+            return redirect('/login');
+        }
+
+        // Mengambil data pendaftaran milik user yang sedang login beserta relasi pelatihannya
+        $registrations = \App\Models\Pendaftaran::where('user_id', auth()->id())
+            ->with('pelatihan')
+            ->latest()
+            ->get();
+
+        return view('pelatihan.history', compact('registrations'));
+    }
+
     public function printCheckIn($id)
     {
         $pelatihan = Pelatihan::findOrFail($id);
         $checkins = Pendaftaran::where('pelatihan_id', $pelatihan->id)
-                        ->whereNotNull('waktu_checkin')
-                        ->orderBy('waktu_checkin', 'asc')
-                        ->get();
+            ->whereNotNull('waktu_checkin')
+            ->orderBy('waktu_checkin', 'asc')
+            ->get();
 
         return view('pelatihan.print-checkin', compact('pelatihan', 'checkins'));
     }

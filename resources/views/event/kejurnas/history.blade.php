@@ -5,7 +5,7 @@
 @section('content')
     <section class="bg-navy py-12 px-4 md:px-16 relative text-center">
         <div class="absolute top-6 left-6 md:top-12 md:left-16 z-20">
-            <a href="{{ route('event.kejurnas.index') }}" class="inline-flex items-center text-white/70 hover:text-yellow text-xs font-bold uppercase tracking-wider transition-colors">
+            <a href="{{ route('main_event.index') }}" class="inline-flex items-center text-white/70 hover:text-yellow text-xs font-bold uppercase tracking-wider transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 Kembali ke Katalog
             </a>
