@@ -20,12 +20,11 @@
 
     <!-- INTEGRASI DATA EVENT TERBARU DARI DATABASE (MAIN EVENT) -->
     @php
+        // Hanya event yang tanggal pelaksanaannya hari ini atau di masa depan (event lewat otomatis tidak tampil)
         $upcomingMainEvents = \App\Models\MainEvent::where('tanggal_pelaksanaan', '>=', now()->startOfDay())
                             ->orderBy('tanggal_pelaksanaan', 'asc')
-                            ->take(4)
+                            ->take(6)
                             ->get();
-        $featuredEvent = $upcomingMainEvents->first();
-        $otherEvents = $upcomingMainEvents->skip(1);
     @endphp
 
     <section class="bg-cream py-12 md:py-20 px-4 sm:px-8 md:px-16" data-aos="fade-up">
@@ -36,94 +35,81 @@
                 <div class="w-16 h-1 bg-yellow mx-auto mt-4"></div>
             </div>
 
-            @if($featuredEvent)
-                <!-- FEATURED EVENT (TERDEKAT) -->
-                @php
-                    $daysLeft = (int) floor(now()->diffInDays(\Carbon\Carbon::parse($featuredEvent->tanggal_pelaksanaan), false));
-                @endphp
-                <a href="{{ route('main_event.show', $featuredEvent->slug) }}" class="group block bg-navy rounded-[1.75rem] md:rounded-[2rem] overflow-hidden shadow-2xl mb-6 md:mb-8 relative">
-                    <div class="grid grid-cols-1 md:grid-cols-2">
-                        <div class="relative h-56 sm:h-72 md:h-auto overflow-hidden">
-                            @if($featuredEvent->poster)
-                                <img src="{{ asset($featuredEvent->poster) }}" alt="{{ $featuredEvent->judul }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                            @else
-                                <div class="w-full h-full bg-navy flex items-center justify-center">
-                                    <svg class="w-16 h-16 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
-                                </div>
-                            @endif
-                            <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-navy via-navy/20 to-transparent"></div>
+            @if($upcomingMainEvents->count())
+                <div class="relative" id="eventCarouselWrapper">
+                    <div id="eventCarouselTrack" class="overflow-hidden rounded-[1.75rem] md:rounded-[2rem] shadow-2xl">
+                        <div id="eventCarouselSlides" class="flex transition-transform duration-700 ease-out">
+                            @foreach($upcomingMainEvents as $event)
+                                @php
+                                    $daysLeft = (int) floor(now()->diffInDays(\Carbon\Carbon::parse($event->tanggal_pelaksanaan), false));
+                                @endphp
+                                <a href="{{ route('main_event.show', $event->slug) }}" class="group block bg-navy shrink-0 w-full">
+                                    <div class="grid grid-cols-1 md:grid-cols-2">
+                                        <div class="relative h-56 sm:h-72 md:h-[380px] overflow-hidden">
+                                            @if($event->poster)
+                                                <img src="{{ asset($event->poster) }}" alt="{{ $event->judul }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                                            @else
+                                                <div class="w-full h-full bg-navy flex items-center justify-center">
+                                                    <svg class="w-16 h-16 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
+                                                </div>
+                                            @endif
+                                            <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-navy via-navy/20 to-transparent"></div>
 
-                            <div class="absolute top-5 left-5 flex flex-col gap-2">
-                                @if($featuredEvent->is_open_active)
-                                    <span class="bg-yellow text-navy px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit shadow-md">Jalur Open</span>
-                                @endif
-                                @if($featuredEvent->is_kejurnas_active)
-                                    <span class="bg-white text-navy px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit shadow-md">Jalur Kejurnas</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="p-6 sm:p-8 md:p-10 flex flex-col justify-center">
-                            <span class="text-yellow text-[10px] font-black uppercase tracking-widest mb-3">
-                                @if($daysLeft == 0) Hari Ini
-                                @elseif($daysLeft == 1) Besok
-                                @else {{ $daysLeft }} Hari Lagi
-                                @endif
-                            </span>
-                            <h3 class="font-oswald text-white text-2xl sm:text-3xl md:text-4xl font-bold uppercase leading-tight mb-4 group-hover:text-yellow transition-colors">
-                                {{ $featuredEvent->judul }}
-                            </h3>
-                            <div class="space-y-2 mb-6">
-                                <div class="flex items-center gap-2 text-white/70 text-xs font-bold">
-                                    <svg class="w-4 h-4 text-yellow shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
-                                    {{ \Carbon\Carbon::parse($featuredEvent->tanggal_pelaksanaan)->translatedFormat('d F Y') }}
-                                </div>
-                                <div class="flex items-center gap-2 text-white/70 text-xs font-bold">
-                                    <svg class="w-4 h-4 text-yellow shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                    {{ $featuredEvent->lokasi }}
-                                </div>
-                            </div>
-                            <span class="inline-flex items-center gap-2 bg-yellow text-navy px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest w-fit group-hover:bg-white transition-colors shadow-lg">
-                                Lihat Detail Event
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- EVENT LAINNYA -->
-                @if($otherEvents->count())
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                        @foreach($otherEvents as $event)
-                            <a href="{{ route('main_event.show', $event->slug) }}" class="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
-                                <div class="h-36 relative overflow-hidden bg-navy">
-                                    @if($event->poster)
-                                        <img src="{{ asset($event->poster) }}" alt="{{ $event->judul }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                    @else
-                                        <div class="w-full h-full flex items-center justify-center text-white/10">
-                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
+                                            <div class="absolute top-5 left-5 flex flex-col gap-2">
+                                                @if($event->is_open_active)
+                                                    <span class="bg-yellow text-navy px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit shadow-md">Jalur Open</span>
+                                                @endif
+                                                @if($event->is_kejurnas_active)
+                                                    <span class="bg-white text-navy px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit shadow-md">Jalur Kejurnas</span>
+                                                @endif
+                                            </div>
                                         </div>
-                                    @endif
-                                    <div class="absolute top-2 left-2 bg-yellow px-2 py-1 rounded text-center leading-none shadow-sm">
-                                        <p class="text-navy text-[8px] font-black uppercase">{{ \Carbon\Carbon::parse($event->tanggal_pelaksanaan)->translatedFormat('M') }}</p>
-                                        <p class="text-navy text-sm font-black">{{ \Carbon\Carbon::parse($event->tanggal_pelaksanaan)->format('d') }}</p>
+
+                                        <div class="p-6 sm:p-8 md:p-10 flex flex-col justify-center">
+                                            <span class="text-yellow text-[10px] font-black uppercase tracking-widest mb-3">
+                                                @if($daysLeft == 0) Hari Ini
+                                                @elseif($daysLeft == 1) Besok
+                                                @else {{ $daysLeft }} Hari Lagi
+                                                @endif
+                                            </span>
+                                            <h3 class="font-oswald text-white text-2xl sm:text-3xl md:text-4xl font-bold uppercase leading-tight mb-4 group-hover:text-yellow transition-colors line-clamp-2">
+                                                {{ $event->judul }}
+                                            </h3>
+                                            <div class="space-y-2 mb-6">
+                                                <div class="flex items-center gap-2 text-white/70 text-xs font-bold">
+                                                    <svg class="w-4 h-4 text-yellow shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
+                                                    {{ \Carbon\Carbon::parse($event->tanggal_pelaksanaan)->translatedFormat('d F Y') }}
+                                                </div>
+                                                <div class="flex items-center gap-2 text-white/70 text-xs font-bold">
+                                                    <svg class="w-4 h-4 text-yellow shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                                    <span class="line-clamp-1">{{ $event->lokasi }}</span>
+                                                </div>
+                                            </div>
+                                            <span class="inline-flex items-center gap-2 bg-yellow text-navy px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest w-fit group-hover:bg-white transition-colors shadow-lg">
+                                                Lihat Detail Event
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="p-4 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <h4 class="font-black text-navy uppercase text-xs leading-tight mb-2 line-clamp-2 min-h-[32px] group-hover:text-navy/60 transition-colors">
-                                            {{ $event->judul }}
-                                        </h4>
-                                        <p class="text-[10px] font-bold text-navy/50 uppercase mb-3 line-clamp-1">{{ $event->lokasi }}</p>
-                                    </div>
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-black text-navy uppercase tracking-wide">
-                                        Lihat Detail
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                                    </span>
-                                </div>
-                            </a>
-                        @endforeach
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
+                </div>
+
+                @if($upcomingMainEvents->count() > 1)
+                <script>
+                    (function() {
+                        const slides = document.getElementById('eventCarouselSlides');
+                        const totalSlides = {{ $upcomingMainEvents->count() }};
+                        let currentIndex = 0;
+
+                        setInterval(function() {
+                            currentIndex = (currentIndex + 1) % totalSlides;
+                            slides.style.transform = `translateX(-${currentIndex * 100}%)`;
+                        }, 5000);
+                    })();
+                </script>
                 @endif
             @else
                 <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 sm:p-10 text-center bg-white">
@@ -133,6 +119,8 @@
             @endif
         </div>
     </section>
+
+    <!-- FITUR PORTAL -->
 
     <section class="bg-navy py-12 md:py-20 px-4 sm:px-8 md:px-16" data-aos="fade-up">
         <div class="max-w-5xl mx-auto">
@@ -236,68 +224,6 @@
                 </a>
 
             </div>
-        </div>
-    </section>
-
-    <!-- TOP-RANKED ATHLETES (FITUR AKAN DATANG) -->
-    <section class="bg-cream py-12 md:py-20 px-4 sm:px-8 md:px-16" data-aos="fade-up">
-        <h2 class="text-center font-oswald font-bold text-2xl sm:text-3xl md:text-4xl text-navy uppercase mb-1 tracking-wide">TOP-RANKED ATHLETES</h2>
-        <p class="text-center text-navy/40 text-[10px] sm:text-xs font-black uppercase tracking-widest mb-8 md:mb-12">( Fitur Segera Hadir / Dalam Pengembangan )</p>
-
-        <!-- Efek Grayscale dan Opacity untuk menandakan fitur belum aktif -->
-        <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 opacity-60 grayscale pointer-events-none select-none">
-
-            <div class="athlete-card bg-white rounded-2xl p-4 sm:p-5 flex items-center relative shadow-lg border border-gray-200">
-                <img src="images/logo.png" alt="Athlete"
-                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover mr-4 border-2 border-transparent">
-                <div class="flex-1">
-                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">LOREM<br>IPSUM</h4>
-                    <p class="text-xs text-navy/70 font-bold mb-0.5">Current ranking 1</p>
-                    <p class="text-xs text-navy font-bold">- points</p>
-                </div>
-                <div class="absolute top-4 right-4 w-6 h-6 bg-gray-300 rounded flex items-center justify-center shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-navy/50" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
-                        </path>
-                    </svg>
-                </div>
-            </div>
-
-            <div class="athlete-card bg-white rounded-2xl p-4 sm:p-5 flex items-center relative shadow-lg border border-gray-200">
-                <img src="images/logo.png" alt="Athlete"
-                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover mr-4 border-2 border-transparent">
-                <div class="flex-1">
-                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">LOREM<br>IPSUM</h4>
-                    <p class="text-xs text-navy/70 font-bold mb-0.5">Current ranking 2</p>
-                    <p class="text-xs text-navy font-bold">- points</p>
-                </div>
-                <div class="absolute top-4 right-4 w-6 h-6 bg-gray-300 rounded flex items-center justify-center shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-navy/50" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
-                        </path>
-                    </svg>
-                </div>
-            </div>
-
-            <div class="athlete-card bg-white rounded-2xl p-4 sm:p-5 flex items-center relative shadow-lg border border-gray-200 sm:col-span-2 md:col-span-1">
-                <img src="images/logo.png" alt="Athlete"
-                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover mr-4 border-2 border-transparent">
-                <div class="flex-1">
-                    <h4 class="font-black text-navy text-sm uppercase leading-tight mb-1">LOREM<br>IPSUM</h4>
-                    <p class="text-xs text-navy/70 font-bold mb-0.5">Current ranking 3</p>
-                    <p class="text-xs text-navy font-bold">- points</p>
-                </div>
-                <div class="absolute top-4 right-4 w-6 h-6 bg-gray-300 rounded flex items-center justify-center shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-navy/50" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
-                        </path>
-                    </svg>
-                </div>
-            </div>
-
         </div>
     </section>
 @endsection
