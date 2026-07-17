@@ -31,7 +31,7 @@ class PelatihanController extends Controller
 
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return abort(403);
         }
         return view('pelatihan.create');
@@ -39,7 +39,7 @@ class PelatihanController extends Controller
 
     public function edit($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return abort(403);
         }
 
@@ -50,7 +50,7 @@ class PelatihanController extends Controller
     // 4. Memproses Pembaruan Data Edit Pelatihan
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return abort(403);
         }
 
@@ -111,7 +111,7 @@ class PelatihanController extends Controller
         $allRegistrations = [];
         $checkedInList = [];
 
-        if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
+        if (auth()->check() && auth()->user()->isAdmin()) {
             $allRegistrations = Pendaftaran::where('pelatihan_id', $pelatihan->id)->latest()->get();
 
             $checkedInList = Pendaftaran::where('pelatihan_id', $pelatihan->id)

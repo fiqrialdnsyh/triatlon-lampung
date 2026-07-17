@@ -19,7 +19,7 @@ class PersonilController extends Controller
 
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect('/personil');
         }
         return view('personil.create');
@@ -27,7 +27,7 @@ class PersonilController extends Controller
 
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $request->validate([
             'kategori' => 'required|in:Atlet,Pelatih,Wasit',
@@ -74,7 +74,7 @@ class PersonilController extends Controller
 
     public function kelola()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect('/personil');
         }
         $atlets = Personil::where('kategori', 'Atlet')->latest()->get();
@@ -86,7 +86,7 @@ class PersonilController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $personil = Personil::findOrFail($id);
 
@@ -123,7 +123,7 @@ class PersonilController extends Controller
 
     public function destroy($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $personil = Personil::findOrFail($id);
         $personil->delete();

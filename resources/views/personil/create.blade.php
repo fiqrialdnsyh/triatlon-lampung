@@ -2,6 +2,10 @@
 
 @section('title', 'Tambah Data SDM Olahraga - FTI LAMPUNG')
 
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+
 @section('content')
     <section class="bg-navy py-12 px-4 md:px-16 min-h-screen">
         <div class="max-w-4xl mx-auto">
@@ -70,7 +74,7 @@
                     <div id="blok-atlet" class="hidden bg-white p-6 rounded-xl border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-1.5">Tempat, Tanggal Lahir</label>
-                            <input type="text" name="ttl" id="input-ttl" value="{{ old('ttl') }}" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-xs font-semibold text-navy focus:outline-none focus:border-navy" placeholder="Contoh: Bandar Lampung, 11 Oktober 2003">
+                            <input type="text" name="ttl" id="input-ttl" value="{{ old('ttl') }}" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-xs font-semibold text-navy focus:outline-none focus:border-navy" placeholder="Tempat, tanggal bulan tahun">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-1.5">Usia / Umur (Tahun)</label>

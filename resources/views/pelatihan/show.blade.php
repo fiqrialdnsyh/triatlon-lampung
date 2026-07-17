@@ -6,7 +6,7 @@
     <section class="py-12 px-8 md:px-16 min-h-screen bg-[#0B1528]">
         <div class="max-w-7xl mx-auto">
 
-            @if (auth()->check() && auth()->user()->email === 'admin@triatlon.test')
+            @if (auth()->check() && auth()->user()->isAdmin())
                 <div class="mb-12 bg-[#F8F9FA] rounded-[2rem] p-8 shadow-xl">
 
                     {{-- HEADER: Cetak Absensi & Scan QR --}}
@@ -128,13 +128,13 @@
                                             <td class="p-4 align-top pt-5">
                                                 <span
                                                     class="inline-block bg-white text-gray-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider mb-2 border border-gray-200">{{ $reg->golongan_biaya }}</span>
-                                                <button type="button" data-url="{{ asset($reg->bukti_pembayaran) }}"
+                                                <button type="button" data-url="{{ route('secure.file', $reg->bukti_pembayaran) }}"
                                                     onclick="openProofModal(this.dataset.url)"
                                                     class="block mt-2 text-blue-600 hover:text-blue-800 underline font-bold text-[10px] cursor-pointer">
                                                     Cek Bukti TF
                                                 </button>
                                                 @if ($reg->surat_rekomendasi)
-                                                    <button type="button" data-url="{{ asset($reg->surat_rekomendasi) }}"
+                                                    <button type="button" data-url="{{ route('secure.file', $reg->surat_rekomendasi) }}"
                                                         onclick="openPdfModal(this.dataset.url)"
                                                         class="block mt-1 text-green-600 hover:text-green-800 underline font-bold text-[10px] cursor-pointer">
                                                         Cek Surat Rekomendasi
@@ -273,7 +273,7 @@
                                 $pelatihan->status == 'Selesai' ||
                                 $kuotaTerisi >= $pelatihan->kuota_maksimal;
                             $isRejected = $userPendaftaran && $userPendaftaran->status === 'Ditolak';
-                            $isAdmin = auth()->check() && auth()->user()->email === 'admin@triatlon.test';
+                            $isAdmin = auth()->check() && auth()->user()->isAdmin();
                         @endphp
 
                         @if ($isAdmin)
@@ -553,7 +553,7 @@
         </div>
     </div>
 
-    @if (auth()->check() && auth()->user()->email === 'admin@triatlon.test')
+    @if (auth()->check() && auth()->user()->isAdmin())
         <div id="scannerModal"
             class="fixed inset-0 z-[120] hidden items-center justify-center p-4 bg-navy/90 backdrop-blur-sm">
             <div

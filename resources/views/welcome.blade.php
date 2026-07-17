@@ -2,6 +2,10 @@
 
 @section('title', 'Beranda - TRIATLON LAMPUNG')
 
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+
 @section('content')
     <section class="relative bg-center bg-cover h-[380px] sm:h-[440px] md:h-[500px] flex flex-col items-center justify-center text-center px-4"
         style="background-image: url('{{ asset('images/beranda.jpeg') }}');" data-aos="fade-in">
@@ -9,7 +13,7 @@
         <div class="relative z-10 px-2">
             <h1
                 class="font-oswald text-white text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold uppercase leading-[1.15] tracking-tight mb-6 md:mb-8 drop-shadow-lg">
-                PUSH YOUR LIMITS.<br>TRIUMPH EVERYWHERE.
+                Next-Gen Triathlon!
             </h1>
             <a href="{{ url('/event') }}"
                 class="inline-block bg-yellow text-navy px-5 md:px-6 py-2 md:py-2.5 font-black text-xs md:text-sm uppercase rounded-sm hover:bg-white transition duration-300">

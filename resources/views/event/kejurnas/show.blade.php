@@ -24,7 +24,7 @@
             {{-- ========================================================= --}}
             {{-- STRUKTUR TAMPILAN KHUSUS LEVEL ADMINISTRATOR              --}}
             {{-- ========================================================= --}}
-            @if (auth()->check() && auth()->user()->email === 'admin@triatlon.test')
+            @if (auth()->check() && auth()->user()->isAdmin())
                 <div class="space-y-6 mb-10">
 
                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-6">
@@ -233,7 +233,7 @@
                                                         </td>
                                                         <td class="p-4 text-center align-top pt-5 border-l border-gray-100">
                                                             <button type="button"
-                                                                data-url="{{ asset($reg->bukti_transfer) }}"
+                                                                data-url="{{ route('secure.file', $reg->bukti_transfer) }}"
                                                                 onclick="openProofModal(this.dataset.url)"
                                                                 class="inline-flex items-center justify-center gap-1 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-wider transition-all duration-300">
                                                                 Cek Bukti
@@ -636,7 +636,7 @@
         </div>
     </div>
 
-    @if (auth()->check() && auth()->user()->email === 'admin@triatlon.test')
+    @if (auth()->check() && auth()->user()->isAdmin())
         <div id="scannerModal"
             class="fixed inset-0 z-[120] hidden items-center justify-center p-4 bg-navy/90 backdrop-blur-sm">
             <div

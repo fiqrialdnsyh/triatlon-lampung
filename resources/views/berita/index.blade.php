@@ -17,7 +17,7 @@
             <h2 class="text-white text-lg font-black uppercase tracking-wider mb-4 md:mb-0">Daftar Berita & Artikel</h2>
 
             @auth
-                @if(auth()->user()->email == 'admin@triatlon.test')
+                @if(auth()->user()->isAdmin())
                     <div class="flex gap-2">
                         <a href="{{ url('/berita/create') }}" class="bg-yellow text-navy px-5 py-2.5 font-black text-xs uppercase rounded-sm hover:bg-white transition-colors shadow-lg">
                             + TULIS BERITA BARU

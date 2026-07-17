@@ -11,7 +11,7 @@
         <p class="text-white/70 font-medium text-sm leading-relaxed max-w-xl mx-auto">Pantau jadwal kejuaraan FTI Lampung. Akses pendaftaran individu (Open) dan delegasi resmi kontingen (Kejurnas) dalam satu pintu.</p>
 
         <div class="mt-8 flex flex-wrap justify-center items-center gap-3">
-            @if(auth()->check() && auth()->user()->email == 'admin@triatlon.test')
+            @if(auth()->check() && auth()->user()->isAdmin())
                 <a href="{{ route('main_event.create') }}" class="inline-flex items-center gap-2 bg-yellow text-navy px-6 py-3 rounded-lg font-black text-xs uppercase hover:bg-white transition-all shadow-lg hover:shadow-yellow/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
                     Terbitkan Event Baru
@@ -19,7 +19,7 @@
             @endif
 
             @auth
-                @if(auth()->user()->email !== 'admin@triatlon.test')
+                @if(!auth()->user()->isAdmin())
                     <a href="{{ auth()->user()->role == 'kontingen' ? route('event.kejurnas.history') : route('event.open.history') }}"
                        class="inline-flex items-center gap-2 bg-transparent border border-white/20 text-white px-6 py-3 rounded-lg font-black text-xs uppercase hover:border-yellow hover:text-yellow transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -30,6 +30,70 @@
         </div>
     </div>
 </section>
+
+{{-- PANEL ADMIN: BUAT & PANTAU AKUN KONTINGEN --}}
+@auth
+    @if(auth()->user()->isAdmin())
+        <div class="bg-white border-b border-gray-200 py-8 px-4 md:px-16 relative shadow-sm">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <h3 class="font-black text-navy uppercase text-xs tracking-wider border-b border-gray-200 pb-2 mb-4">Buat Akun Kontingen Baru</h3>
+                    <form action="{{ route('main_event.buat_kontingen') }}" method="POST" class="space-y-3">
+                        @csrf
+                        <div>
+                            <label class="block text-[9px] font-bold text-navy uppercase mb-1">Nama Kontingen / Pengprov</label>
+                            <input type="text" name="name" placeholder="Contoh: Kontingen DKI Jakarta" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-xs font-semibold text-navy focus:outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-navy uppercase mb-1">Email Akun</label>
+                            <input type="email" name="email" placeholder="kontingen@mail.com" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-xs font-semibold text-navy focus:outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-navy uppercase mb-1">Password Akses</label>
+                            <input type="password" name="password" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-xs font-semibold text-navy focus:outline-none" required>
+                        </div>
+                        <button type="submit" class="w-full bg-navy text-yellow py-2 text-xs font-black uppercase tracking-wider rounded transition-colors hover:bg-navy/90">Daftarkan Akun</button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-black text-navy uppercase text-xs tracking-wider border-b border-gray-200 pb-2 mb-4">Daftar Akun Kontingen Aktif Sistem</h3>
+                        <div class="overflow-y-auto max-h-44 border border-gray-200 rounded bg-white">
+                            <table class="w-full text-left text-[11px] border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100 text-navy uppercase font-black border-b border-gray-200">
+                                        <th class="p-2">Nama Kontingen Resmi</th>
+                                        <th class="p-2">Username / Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 font-semibold text-navy/80">
+                                    @forelse($kontingens ?? [] as $k)
+                                        <tr>
+                                            <td class="p-2 uppercase font-bold text-navy">{{ $k->name }}</td>
+                                            <td class="p-2 font-mono">{{ $k->email }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="2" class="p-3 text-center text-navy/30 font-bold uppercase text-[10px]">Belum ada akun kontingen terdaftar.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="pt-4 flex justify-end">
+                        <a href="{{ route('main_event.create') }}" class="bg-yellow text-navy px-6 py-2.5 font-black text-xs uppercase rounded-lg hover:bg-navy hover:text-yellow transition-colors shadow-sm">
+                            + BUAT MASTER EVENT KEJURNAS
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    @endif
+@endauth
 
 <section class="bg-[#EDEFF3] py-16 px-6 md:px-16 min-h-screen">
     <div class="max-w-7xl mx-auto">
@@ -94,7 +158,7 @@
                         </div>
 
                         <div class="pt-6 border-t border-gray-100">
-                            @if(auth()->check() && auth()->user()->email == 'admin@triatlon.test')
+                            @if(auth()->check() && auth()->user()->isAdmin())
                                 <div class="grid gap-2 {{ $event->is_open_active && $event->is_kejurnas_active ? 'grid-cols-2' : 'grid-cols-1' }}">
                                     @if($event->is_open_active && $subOpen = $event->subEvents->where('tipe', 'Open')->first())
                                         <a href="{{ route('event.open.show', $subOpen->slug) }}" class="text-center bg-navy text-yellow hover:bg-yellow hover:text-navy border border-navy py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">

@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Mail\AdminNewRegistrationMail;
+use App\Mail\RegistrationStatusMail;
+use Illuminate\Support\Facades\Mail;
 
 class EventKejurnasController extends Controller
 {
@@ -24,7 +27,7 @@ class EventKejurnasController extends Controller
     // Proses Admin Membuat Akun Kontingen Baru
     public function buatAkunKontingen(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -44,13 +47,13 @@ class EventKejurnasController extends Controller
 
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
         return view('event.kejurnas.create');
     }
 
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $request->validate([
             'judul' => 'required|string|max:255',
@@ -108,18 +111,18 @@ class EventKejurnasController extends Controller
         $event = Event::where('slug', $slug)->where('tipe', 'Kejurnas')->firstOrFail();
 
         $kuotaTerisi = EventRegistration::where('event_id', $event->id)
-                                        ->whereIn('status_pembayaran', ['Menunggu', 'Valid'])
-                                        ->count();
+            ->whereIn('status_pembayaran', ['Menunggu', 'Valid'])
+            ->count();
 
         $groupedRegistrations = [];
         $allRegistrations = collect(); // Inisialisasi koleksi kosong sebagai nilai bawaan
 
-        if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
+        if (auth()->check() && auth()->user()->isAdmin()) {
             // Mengambil semua data secara rata (flat) untuk tabel Check-In
             $allRegistrations = EventRegistration::where('event_id', $event->id)
-                                            ->with('user')
-                                            ->latest()
-                                            ->get();
+                ->with('user')
+                ->latest()
+                ->get();
 
             // Mengelompokkan data yang sama berdasarkan akun untuk tabel Verifikasi Kontingen
             $groupedRegistrations = $allRegistrations->groupBy('user_id');
@@ -128,9 +131,9 @@ class EventKejurnasController extends Controller
         $myAtletRegistrations = [];
         if (auth()->check() && auth()->user()->role === 'kontingen') {
             $myAtletRegistrations = EventRegistration::where('event_id', $event->id)
-                                                    ->where('user_id', auth()->id())
-                                                    ->latest()
-                                                    ->get();
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->get();
         }
 
         // Mengirimkan semua variabel yang dibutuhkan ke Blade View
@@ -146,14 +149,14 @@ class EventKejurnasController extends Controller
 
     public function edit($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
         $event = Event::findOrFail($id);
         return view('event.kejurnas.edit', compact('event'));
     }
 
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $event = Event::findOrFail($id);
 
@@ -192,8 +195,8 @@ class EventKejurnasController extends Controller
 
         // HITUNG KUOTA SAAT INI
         $kuotaTerisi = EventRegistration::where('event_id', $event->id)
-                                        ->whereIn('status_pembayaran', ['Menunggu', 'Valid'])
-                                        ->count();
+            ->whereIn('status_pembayaran', ['Menunggu', 'Valid'])
+            ->count();
 
         // 1. VALIDASI KUOTA PENUH (OTOMATIS TUTUP EVENT)
         if ($kuotaTerisi >= $event->kuota_maksimal) {
@@ -244,9 +247,9 @@ class EventKejurnasController extends Controller
         $buktiPath = null;
         if ($request->hasFile('bukti_transfer')) {
             $file = $request->file('bukti_transfer');
-            $filename = time() . '_kejurnas_tf_' . auth()->id() . '_' . rand(100,999) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/event/pembayaran'), $filename);
-            $buktiPath = 'uploads/event/pembayaran/' . $filename;
+            $filename = time() . '_kejurnas_tf_' . auth()->id() . '_' . rand(100, 999) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('event/pembayaran', $filename, 'private');
+            $buktiPath = 'event/pembayaran/' . $filename;
         }
 
         EventRegistration::create([
@@ -268,23 +271,41 @@ class EventKejurnasController extends Controller
             'golongan_biaya' => $request->golongan_biaya,
             'nominal_bayar' => $nominalBayar,
             'bukti_transfer' => $buktiPath,
-            'qr_token' => 'FTI-KJN-' . strtoupper(Str::random(4)) . '-' . time(),
+            'qr_token' => 'FTI-KJN-' . strtoupper(Str::random(10)) . '-' . strtoupper(Str::random(6)),
             'status_pembayaran' => 'Menunggu'
         ]);
+
+        $adminEmails = User::where('role', 'admin')->pluck('email')->toArray();
+        if (!empty($adminEmails)) {
+            Mail::to($adminEmails)->send(new AdminNewRegistrationMail([
+                'jenis' => 'Event Kejurnas — ' . $event->judul,
+                'nama_kegiatan' => $event->judul,
+                'nama_pendaftar' => $request->nama_lengkap . ' (Kontingen: ' . auth()->user()->name . ')',
+                'detail' => [
+                    'BIB' => strtoupper($request->bib_name),
+                    'Kategori Lomba' => $request->kategori_lomba,
+                    'Asal Daerah' => $request->asal_daerah,
+                    'Golongan Biaya' => $request->golongan_biaya,
+                ],
+                'link_verifikasi' => route('event.kejurnas.show', $event->slug),
+                'waktu_daftar' => now()->translatedFormat('d F Y, H:i') . ' WIB',
+            ]));
+        }
 
         return redirect()->back()->with('success', 'Atlet baru berhasil didaftarkan ke dalam kontingen Anda.');
     }
 
-    private function uploadFile($file, $folder, $title) {
+    private function uploadFile($file, $folder, $title)
+    {
         $filename = time() . '_' . $folder . '_' . Str::slug($title) . '.' . $file->getClientOriginalExtension();
-        $file->move(public_path('uploads/event/' . $folder), $filename);
+        $file->storeAs('event/' . $folder, $filename, 'private');
         return $filename;
     }
 
     // Menampilkan Halaman Khusus Cetak Laporan Check-In Kejurnas (PDF)
     public function printCheckIn($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return abort(403);
         }
 
@@ -292,10 +313,10 @@ class EventKejurnasController extends Controller
 
         // Mengambil pendaftar yang sudah absen, beserta relasi akun kontingennya
         $checkins = EventRegistration::where('event_id', $event->id)
-                        ->whereNotNull('waktu_checkin')
-                        ->with('user')
-                        ->orderBy('waktu_checkin', 'asc')
-                        ->get();
+            ->whereNotNull('waktu_checkin')
+            ->with('user')
+            ->orderBy('waktu_checkin', 'asc')
+            ->get();
 
         return view('event.kejurnas.print-checkin', compact('event', 'checkins'));
     }
@@ -303,7 +324,7 @@ class EventKejurnasController extends Controller
     // Memproses Verifikasi Status Pembayaran & Reset (Khusus Admin untuk Kejurnas)
     public function verifikasi(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return abort(403);
         }
 
@@ -324,13 +345,29 @@ class EventKejurnasController extends Controller
         }
 
         $registration->save();
+
+        if (in_array($request->status_pembayaran, ['Valid', 'Ditolak'])) {
+            Mail::to($registration->email)->send(new RegistrationStatusMail([
+                'status' => $request->status_pembayaran,
+                'jenis' => 'Event Kejurnas',
+                'nama_kegiatan' => $registration->event->judul,
+                'nama_pendaftar' => $registration->nama_lengkap,
+                'alasan_penolakan' => $registration->pesan_penolakan,
+                'detail' => [
+                    'BIB' => $registration->bib_name,
+                    'Kategori Lomba' => $registration->kategori_lomba,
+                ],
+                'link_terkait' => route('event.kejurnas.show', $registration->event->slug),
+                'link_label' => $request->status_pembayaran === 'Valid' ? 'Lihat Status Atlet' : 'Perbaiki Berkas',
+            ]));
+        }
         return redirect()->back()->with('success', 'Status validasi atlet kontingen berhasil diperbarui.');
     }
 
     // Memproses Data dari Scanner QR Code Kamera Admin Kejurnas dengan Validasi Nomor Pertandingan
     public function checkIn(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak.']);
         }
 
@@ -339,8 +376,8 @@ class EventKejurnasController extends Controller
 
         // Langkah 1: Cari pendaftaran yang COCOK dengan Token QR sekaligus ID Event Kejurnas ini
         $registration = EventRegistration::where('qr_token', $token)
-                                          ->where('event_id', $eventId)
-                                          ->first();
+            ->where('event_id', $eventId)
+            ->first();
 
         if (!$registration) {
             // Langkah 2: Jika tidak cocok, cek apakah token ini sebenarnya terdaftar di nomor pertandingan/event lain
@@ -428,8 +465,8 @@ class EventKejurnasController extends Controller
 
         if ($request->hasFile('bukti_transfer')) {
             $file = $request->file('bukti_transfer');
-            $filename = time() . '_kejurnas_tf_rev_' . auth()->id() . '_' . rand(100,999) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/event/pembayaran'), $filename);
+            $filename = time() . '_kejurnas_tf_rev_' . auth()->id() . '_' . rand(100, 999) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('event/pembayaran', $filename, 'private');
             $registration->bukti_transfer = 'uploads/event/pembayaran/' . $filename;
         }
 

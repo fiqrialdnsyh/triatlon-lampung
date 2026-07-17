@@ -9,15 +9,44 @@ class EventRegistration extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'event_id',
+        'user_id',
+        'nama_lengkap',
+        'nomor_ktp',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'usia',
+        'jenis_kelamin',
+        'golongan_darah',
+        'alamat',
+        'asal_daerah',
+        'email',
+        'nomor_telepon',
+        'bib_name',
+        'kategori_lomba',
+        'golongan_biaya',
+        'nominal_bayar',
+        'bukti_transfer',
+        'qr_token',
+        'status_pembayaran',
+        'pesan_penolakan',
+        'waktu_checkin',
+    ];
 
-    // Relasi balik ke tabel Event
+    protected function casts(): array
+    {
+        return [
+            'nomor_ktp' => 'encrypted',
+            'waktu_checkin' => 'datetime',
+        ];
+    }
+
     public function event()
     {
         return $this->belongsTo(Event::class);
     }
 
-    // Relasi balik ke akun User pendaftar
     public function user()
     {
         return $this->belongsTo(User::class);

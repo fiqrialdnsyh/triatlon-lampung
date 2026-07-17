@@ -25,7 +25,7 @@
             <!-- STRUKTUR TAMPILAN KHUSUS LEVEL ADMINISTRATOR              -->
             <!-- ========================================================= -->
             @auth
-                @if (auth()->user()->email === 'admin@triatlon.test')
+                @if (auth()->user()->isAdmin())
                     <div class="space-y-6 mb-10">
                         <!-- PANEL QR CHECK-IN ATLET STYLE NAVBAR -->
                         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-6">
@@ -204,7 +204,7 @@
                                                         </td>
                                                         <td class="p-5 text-center align-top pt-6 border-l border-gray-100">
                                                             <button type="button"
-                                                                onclick="openProofModal('{{ asset($reg->bukti_transfer) }}')"
+                                                                onclick="openProofModal('{{ route('secure.file', $reg->bukti_transfer) }}')"
                                                                 class="inline-flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-300 shadow-sm">
                                                                 Cek Bukti
                                                             </button>
@@ -267,7 +267,7 @@
             <!-- ========================================================= -->
             <!-- STRUKTUR TAMPILAN LEVEL PUBLIK / KANDIDAT ATLET           -->
             <!-- ========================================================= -->
-            @if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test')
+            @if (!auth()->check() || auth()->user()->isAdmin())
                 <div class="flex flex-col lg:flex-row gap-8">
 
                     <!-- INFORMASI EVENT -->

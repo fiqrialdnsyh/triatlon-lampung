@@ -22,7 +22,7 @@
                     @endforeach
                 </div>
 
-                @if (auth()->check() && auth()->user()->email === 'admin@triatlon.test')
+                @if (auth()->check() && auth()->user()->isAdmin())
                     <a href="{{ route('campaign.create') }}"
                         class="inline-flex items-center gap-2 bg-navy text-yellow px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider hover:bg-yellow hover:text-navy transition-colors shadow-md shrink-0">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">

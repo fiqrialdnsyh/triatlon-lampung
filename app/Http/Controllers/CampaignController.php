@@ -45,7 +45,7 @@ class CampaignController extends Controller
             : 0;
 
         $allKontribusi = [];
-        if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
+        if (auth()->check() && auth()->user()->isAdmin()) {
             $allKontribusi = $campaign->kontribusi()->latest()->get();
         }
 
@@ -55,13 +55,13 @@ class CampaignController extends Controller
     // --- ADMIN ---
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
         return view('campaign.create');
     }
 
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
 
         $request->validate([
             'judul' => 'required|string|max:255',

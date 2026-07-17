@@ -135,9 +135,7 @@
             <div class="mt-8 text-center">
                 <p class="text-xs font-semibold text-navy/70">
                     Belum punya akun?
-                    <a href="{{ url('/register') }}"
-                        class="font-black text-navy uppercase hover:text-yellow transition-colors ml-1 border-b border-navy hover:border-yellow">Daftar
-                        Di Sini</a>
+                    <a href="{{ route('register') }}" class="font-black text-navy uppercase hover:text-yellow transition-colors ml-1 border-b border-navy hover:border-yellow">Daftar Di Sini</a>
                 </p>
             </div>
 

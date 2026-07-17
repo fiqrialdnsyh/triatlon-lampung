@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pengurus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PengurusController extends Controller
 {
@@ -22,7 +23,7 @@ class PengurusController extends Controller
     // Menampilkan halaman form tambah pengurus
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect('/pengurus');
         }
 
@@ -56,7 +57,7 @@ class PengurusController extends Controller
     /// Menampilkan halaman Kelola dengan gaya per-sesi (seperti Create)
     public function kelola()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect('/pengurus');
         }
 
@@ -68,10 +69,12 @@ class PengurusController extends Controller
         return view('pengurus.kelola', compact('dewan', 'inti', 'bidang', 'cabang'));
     }
 
+
+
     // Menampilkan halaman form edit pengurus individual
     public function edit($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
         $pengurus = Pengurus::findOrFail($id);
         return view('pengurus.edit', compact('pengurus'));
     }
@@ -79,7 +82,7 @@ class PengurusController extends Controller
     // Memproses pembaruan data dari satu baris form di halaman Kelola
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $pengurus = Pengurus::findOrFail($id);
 
@@ -130,7 +133,7 @@ class PengurusController extends Controller
     // Memproses penghapusan satu baris data
     public function destroy($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
         Pengurus::findOrFail($id)->delete();
         return redirect('/pengurus/kelola')->with('success', 'Data pengurus berhasil dihapus!');
     }
@@ -138,7 +141,7 @@ class PengurusController extends Controller
     // Memproses penyimpanan data massal (Bulk Insert) ke database
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $tipe = $request->tipe_form;
 
@@ -204,5 +207,32 @@ class PengurusController extends Controller
         }
 
         return redirect('/pengurus')->with('success', 'Data kepengurusan berhasil ditambahkan secara massal!');
+    }
+
+    public function showCabang($slug)
+    {
+        // Ubah cara pengambilan data: Ambil semua yang punya nama daerah tanpa mempedulikan isi kolom tingkatan
+        $semuaCabang = \App\Models\Pengurus::whereNotNull('nama_daerah')
+                                            ->where('nama_daerah', '!=', '-')
+                                            ->get();
+
+        // Cocokkan slug dengan nama daerah
+        $pengurusCabang = $semuaCabang->filter(function ($item) use ($slug) {
+            return \Illuminate\Support\Str::slug($item->nama_daerah) === $slug;
+        });
+
+        // Jika gagal menemukan kecocokan data
+        if ($pengurusCabang->isEmpty()) {
+            abort(404, 'Data Pengurus Cabang tidak ditemukan. Periksa penulisan nama daerah di database.');
+        }
+
+        $infoDaerah = $pengurusCabang->first();
+        $namaDaerah = $infoDaerah->nama_daerah;
+
+        // Pisahkan Ketua dan Anggota lainnya
+        $ketua = $pengurusCabang->filter(fn($p) => \Illuminate\Support\Str::contains(strtolower($p->jabatan), 'ketua'))->first();
+        $anggota = $pengurusCabang->filter(fn($p) => !\Illuminate\Support\Str::contains(strtolower($p->jabatan), 'ketua'));
+
+        return view('pengurus.cabang', compact('pengurusCabang', 'infoDaerah', 'namaDaerah', 'ketua', 'anggota'));
     }
 }

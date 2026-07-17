@@ -28,7 +28,7 @@ class VenueController extends Controller
     // Menampilkan halaman tambah venue khusus admin
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
 
         return view('venue.create');
     }
@@ -36,7 +36,7 @@ class VenueController extends Controller
     // Memproses penyimpanan data venue baru
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
 
         $request->validate([
             'nama' => 'required|string|max:255',
@@ -90,7 +90,7 @@ class VenueController extends Controller
     // Menampilkan halaman edit venue khusus admin
     public function edit($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
 
         $venue = Venue::with('photos')->findOrFail($id);
 
@@ -100,7 +100,7 @@ class VenueController extends Controller
     // Memproses pembaruan data venue
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
 
         $venue = Venue::findOrFail($id);
 
@@ -146,7 +146,7 @@ class VenueController extends Controller
     // Fungsi khusus menghapus SATU foto spesifik via tombol di halaman edit
     public function destroyFoto($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
 
         $foto = VenuePhoto::findOrFail($id);
 
@@ -163,7 +163,7 @@ class VenueController extends Controller
     // Fungsi khusus menghapus KESELURUHAN data Venue (jika dibutuhkan)
     public function destroy($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
 
         $venue = Venue::with('photos')->findOrFail($id);
 

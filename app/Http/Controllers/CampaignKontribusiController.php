@@ -78,7 +78,7 @@ class CampaignKontribusiController extends Controller
 
     public function terima($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
         $kontribusi = CampaignKontribusi::findOrFail($id);
         $kontribusi->update(['status' => 'Diterima', 'alasan_ditolak' => null]);
         return back()->with('success', 'Kontribusi diterima.');
@@ -86,7 +86,7 @@ class CampaignKontribusiController extends Controller
 
     public function tolak(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) abort(403);
         $kontribusi = CampaignKontribusi::findOrFail($id);
         $kontribusi->update([
             'status' => 'Ditolak',

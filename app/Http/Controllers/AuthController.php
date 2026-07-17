@@ -48,6 +48,30 @@ class AuthController extends Controller
         return Socialite::driver('google')->redirect();
     }
 
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'terms' => 'required',
+        ], [
+            'terms.required' => 'Anda harus menyetujui Syarat & Ketentuan terlebih dahulu.',
+            'email.unique' => 'Email ini sudah terdaftar. Silakan login atau gunakan email lain.',
+        ]);
+
+        $user = \App\Models\User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => 'user', // default role untuk pendaftar umum
+        ]);
+
+        auth()->login($user);
+
+        return redirect('/')->with('success', 'Akun berhasil dibuat. Selamat datang, ' . $user->name . '!');
+    }
+
     // Menangani kembalian data dari Google
     public function handleGoogleCallback()
     {
@@ -63,7 +87,8 @@ class AuthController extends Controller
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'password' => bcrypt(Str::random(16)) // Password acak karena login via Google
+                    'password' => bcrypt(Str::random(16)),
+                    'role' => 'user', // default role
                 ]);
             } else {
                 // Jika sudah ada emailnya tapi google_id kosong, perbarui datanya
@@ -76,7 +101,6 @@ class AuthController extends Controller
             Auth::login($user, true);
 
             return redirect()->intended('/');
-
         } catch (\Exception $e) {
             return redirect('/login')->withErrors(['email' => 'Gagal login menggunakan Google. Silakan coba lagi.']);
         }

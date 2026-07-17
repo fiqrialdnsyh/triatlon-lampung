@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\MainEvent;
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class MainEventController extends Controller
@@ -13,9 +15,36 @@ class MainEventController extends Controller
     // 1. HALAMAN KATALOG PESERTA (GABUNGAN)
     public function index()
     {
-        // Menampilkan semua event besar yang aktif
         $mainEvents = MainEvent::latest()->get();
-        return view('main_event.index', compact('mainEvents'));
+
+        // Ambil daftar akun kontingen hanya jika admin (dipakai di panel admin)
+        $kontingens = collect();
+        if (auth()->check() && auth()->user()->isAdmin()) {
+            $kontingens = User::where('role', 'kontingen')->orderBy('name', 'asc')->get();
+        }
+
+        return view('main_event.index', compact('mainEvents', 'kontingens'));
+    }
+
+    // Proses Admin Membuat Akun Kontingen Baru (dipakai dari halaman ini juga)
+    public function buatAkunKontingen(Request $request)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'kontingen',
+        ]);
+
+        return redirect()->back()->with('success', 'Akun Kontingen Resmi baru berhasil dibuat dan didaftarkan.');
     }
 
     // 2. HALAMAN DETAIL PESERTA DENGAN TAB TOGGLE
@@ -37,12 +66,11 @@ class MainEventController extends Controller
             if ($eventKejurnas) {
                 $sudahDaftarKejurnas = \App\Models\EventRegistration::where('event_id', $eventKejurnas->id)->where('user_id', auth()->id())->exists();
 
-                // Ambil semua atlet yang sudah didaftarkan kontingen ini untuk event Kejurnas ini
                 if (auth()->user()->role === 'kontingen') {
                     $myAtletRegistrations = \App\Models\EventRegistration::where('event_id', $eventKejurnas->id)
-                        ->where('user_id', auth()->id())
-                        ->latest()
-                        ->get();
+                                                ->where('user_id', auth()->id())
+                                                ->latest()
+                                                ->get();
                 }
             }
         }
@@ -53,13 +81,13 @@ class MainEventController extends Controller
     // 3. HALAMAN TAMBAH EVENT KHUSUS ADMIN
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
         return view('main_event.create');
     }
 
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $request->validate([
             'judul' => 'required|string|max:255',
@@ -67,14 +95,9 @@ class MainEventController extends Controller
             'tanggal_pelaksanaan' => 'required|date|after_or_equal:today',
             'lokasi' => 'required|string|max:255',
             'poster' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-
-            // Validasi Jalur (Mencegah error buka_jalur is required)
             'buka_jalur' => 'required|array|min:1',
-
-            // Validasi Array Nomor Perlombaan
             'kategori_nama' => 'required|array|min:1',
             'kategori_target' => 'required|array|min:1',
-
             'kuota_maksimal' => 'required|numeric|min:1',
             'batas_pendaftaran' => 'required|date|before_or_equal:tanggal_pelaksanaan',
             'nama_bank' => 'required|string',
@@ -90,7 +113,6 @@ class MainEventController extends Controller
         $isOpen = in_array('Open', $request->buka_jalur);
         $isKejurnas = in_array('Kejurnas', $request->buka_jalur);
 
-        // Memilah Nomor Perlombaan Berdasarkan Target Jalur
         $katOpen = [];
         $katKejurnas = [];
 
@@ -102,7 +124,6 @@ class MainEventController extends Controller
             }
         }
 
-        // Cek pengamanan ganda
         if ($isOpen && count($katOpen) == 0) {
             return back()->withErrors(['kategori' => 'Jalur Open diaktifkan, tapi tidak ada nomor perlombaan yang Anda alokasikan untuk Open.'])->withInput();
         }
@@ -145,7 +166,6 @@ class MainEventController extends Controller
             $thbPath = 'uploads/event/thb/' . $filename;
         }
 
-        // Data Bersama (Tanpa input kategori_lomba yang sudah usang)
         $dataBersama = [
             'main_event_id' => $mainEvent->id,
             'judul' => $request->judul,

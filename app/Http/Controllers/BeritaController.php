@@ -19,7 +19,7 @@ class BeritaController extends Controller
     // Menampilkan form buat berita (Admin Only)
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect('/berita');
         }
         return view('berita.create');
@@ -28,7 +28,7 @@ class BeritaController extends Controller
     // Menyimpan berita ke database
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $request->validate([
             'judul' => 'required|string|max:255',
@@ -68,7 +68,7 @@ class BeritaController extends Controller
     // Halaman khusus kelola list berita (Admin Only)
     public function kelola()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect('/berita');
         }
         $beritas = Berita::latest()->get();
@@ -78,7 +78,7 @@ class BeritaController extends Controller
     // Menampilkan form edit berita
     public function edit($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
         $berita = Berita::findOrFail($id);
         return view('berita.edit', compact('berita'));
     }
@@ -86,7 +86,7 @@ class BeritaController extends Controller
     // Memproses pembaruan berita
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $berita = Berita::findOrFail($id);
 
@@ -99,7 +99,6 @@ class BeritaController extends Controller
         ]);
 
         $coverPath = $berita->foto_cover;
-        // Jika ada unggahan foto cover baru, hapus foto lama dan simpan yang baru
         if ($request->hasFile('foto_cover')) {
             if (File::exists(public_path($berita->foto_cover))) {
                 File::delete(public_path($berita->foto_cover));
@@ -125,11 +124,10 @@ class BeritaController extends Controller
     // Memproses penghapusan berita
     public function destroy($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $berita = Berita::findOrFail($id);
 
-        // Hapus file fisik foto cover dari folder public/uploads/berita sebelum menghapus baris database
         if (File::exists(public_path($berita->foto_cover))) {
             File::delete(public_path($berita->foto_cover));
         }

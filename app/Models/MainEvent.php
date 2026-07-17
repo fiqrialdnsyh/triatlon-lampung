@@ -8,9 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class MainEvent extends Model
 {
     use HasFactory;
-    protected $guarded = ['id'];
 
-    // Satu MainEvent punya banyak sub-event (Open/Kejurnas)
+    protected $fillable = [
+        'judul',
+        'slug',
+        'deskripsi',
+        'tanggal_pelaksanaan',
+        'lokasi',
+        'poster',
+        'is_open_active',
+        'is_kejurnas_active',
+    ];
+
     public function subEvents()
     {
         return $this->hasMany(Event::class, 'main_event_id');

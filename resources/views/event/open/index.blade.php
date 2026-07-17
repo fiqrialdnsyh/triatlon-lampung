@@ -13,7 +13,7 @@
 
         <!-- TOMBOL RIWAYAT KHUSUS ATLET (PESERTA) -->
         @auth
-            @if(auth()->user()->email !== 'admin@triatlon.test')
+            @if(auth()->user()->isAdmin())
                 <div class="absolute top-24 right-6 md:top-8 md:right-16 z-20">
                     <a href="{{ route('event.open.history') }}" class="bg-yellow text-navy px-5 py-2.5 rounded-lg font-black text-xs uppercase tracking-wider hover:bg-white transition-colors shadow-md flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -25,7 +25,7 @@
     </section>
 
     @auth
-        @if(auth()->user()->email == 'admin@triatlon.test')
+        @if(auth()->user()->isAdmin())
             <div class="bg-white border-b border-gray-200 py-4 px-4 md:px-16 z-20 relative shadow-sm">
                 <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                     <p class="text-navy font-black text-xs uppercase tracking-widest flex items-center">
@@ -87,7 +87,7 @@
 
                             <div class="w-full">
                                 @auth
-                                    @if(auth()->user()->email == 'admin@triatlon.test')
+                                    @if(auth()->user()->isAdmin())
                                         <div class="grid grid-cols-2 gap-2">
                                             <a href="{{ route('event.open.kelola') }}" class="text-center bg-gray-100 text-navy py-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider border border-gray-200 hover:bg-gray-200 transition-colors">
                                                 Edit Form

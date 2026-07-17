@@ -20,7 +20,7 @@
     </section>
 
     @auth
-        @if(auth()->user()->email == 'admin@triatlon.test')
+        @if(auth()->user()->isAdmin())
             <div class="bg-white border-b border-gray-200 py-8 px-4 md:px-16 relative shadow-sm">
                 <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -118,7 +118,7 @@
                                 </div>
                             </div>
 
-                            @if(auth()->check() && auth()->user()->email == 'admin@triatlon.test')
+                            @if(auth()->check() && auth()->user()->isAdmin())
                                 <div class="grid grid-cols-2 gap-2 mt-4">
                                     <a href="{{ route('event.kejurnas.edit', $event->id) }}" class="block text-center bg-gray-100 text-navy py-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider hover:bg-gray-200 transition-colors border border-gray-200">
                                         Edit Form

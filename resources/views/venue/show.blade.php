@@ -36,7 +36,7 @@
                 <p class="text-white/70 font-semibold text-sm max-w-2xl leading-relaxed">{{ $venue->alamat }}</p>
             </div>
 
-            @if (auth()->check() && auth()->user()->email == 'admin@triatlon.test')
+            @if (auth()->check() && auth()->user()->isAdmin())
                 <a href="{{ route('venue.edit', $venue->id) }}"
                     class="bg-white text-navy px-8 py-3.5 rounded-xl font-black text-xs uppercase hover:bg-yellow transition-colors shadow-xl shrink-0">
                     Edit Data Venue

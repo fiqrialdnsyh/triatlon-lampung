@@ -16,13 +16,13 @@
 
             <div class="flex items-center gap-2 w-full sm:w-auto">
                 @auth
-                    @if (auth()->user()->email !== 'admin@triatlon.test')
+                    @if (!auth()->user()->isAdmin())
                         <a href="{{ route('pelatihan.history') }}"
                             class="w-full sm:w-auto text-center bg-transparent text-white border border-white/30 hover:border-yellow hover:text-yellow px-5 py-2.5 font-black text-xs uppercase tracking-wider rounded-md transition-colors shadow-lg">
                             Riwayat Pendaftaran Saya
                         </a>
                     @else
-                        <a href="{{ url('/pelatihan/create') }}"
+                        <a href="{{ route('pelatihan.create') }}"
                             class="w-full sm:w-auto text-center bg-yellow text-navy px-5 py-2.5 font-black text-xs uppercase tracking-wider rounded-md hover:bg-white transition-colors shadow-lg">
                             + TAMBAH PELATIHAN BARU
                         </a>
@@ -70,13 +70,13 @@
                         </div>
                         <div class="flex space-x-2">
                             @auth
-                                @if (auth()->user()->email == 'admin@triatlon.test')
+                                @if (auth()->user()->isAdmin())
                                     <a href="{{ route('pelatihan.edit', $item->id) }}"
                                         class="bg-gray-300 text-navy px-4 py-2.5 font-black text-xs uppercase rounded-sm hover:bg-gray-400 transition-colors">EDIT</a>
                                 @endif
                             @endauth
 
-                            @if (!$isTutup || (auth()->check() && auth()->user()->email == 'admin@triatlon.test'))
+                            @if (!$isTutup || (auth()->check() && auth()->user()->isAdmin()))
                                 <a href="{{ url('/pelatihan/' . $item->id) }}"
                                     class="bg-yellow text-navy px-6 py-2.5 font-black text-xs uppercase rounded-sm hover:bg-navy hover:text-yellow transition-colors">
                                     DETAIL

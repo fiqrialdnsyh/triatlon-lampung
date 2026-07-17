@@ -7,6 +7,10 @@ use App\Models\EventRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Mail\AdminNewRegistrationMail;
+use App\Mail\RegistrationStatusMail;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 class EventOpenController extends Controller
 {
@@ -20,14 +24,14 @@ class EventOpenController extends Controller
     // Menampilkan Form Tambah Event Baru (Khusus Admin)
     public function create()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
         return view('event.open.create');
     }
 
     // Memproses Simpan Master Event Baru
     public function store(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $request->validate([
             'judul' => 'required|string|max:255',
@@ -64,7 +68,7 @@ class EventOpenController extends Controller
         if ($request->hasFile('poster')) {
             $file = $request->file('poster');
             $filename = time() . '_poster_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/event/poster'), $filename);
+            $file->storeAs('event/pembayaran', $filename, 'private');
             $posterPath = 'uploads/event/poster/' . $filename;
         }
 
@@ -72,7 +76,7 @@ class EventOpenController extends Controller
         if ($request->hasFile('thb_file')) {
             $file = $request->file('thb_file');
             $filename = time() . '_thb_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/event/thb'), $filename);
+            $file->storeAs('event/pembayaran', $filename, 'private');
             $thbPath = 'uploads/event/thb/' . $filename;
         }
 
@@ -109,7 +113,7 @@ class EventOpenController extends Controller
             ->count();
 
         $allRegistrations = collect();
-        if (auth()->check() && auth()->user()->email === 'admin@triatlon.test') {
+        if (auth()->check() && auth()->user()->isAdmin()) {
             $allRegistrations = EventRegistration::where('event_id', $event->id)->latest()->get();
         }
 
@@ -171,8 +175,8 @@ class EventOpenController extends Controller
         if ($request->hasFile('bukti_transfer')) {
             $file = $request->file('bukti_transfer');
             $filename = time() . '_tf_' . auth()->id() . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/event/pembayaran'), $filename);
-            $buktiPath = 'uploads/event/pembayaran/' . $filename;
+            $file->storeAs('event/pembayaran', $filename, 'private');
+            $buktiPath = 'event/pembayaran/' . $filename;
         }
 
         EventRegistration::create([
@@ -194,10 +198,27 @@ class EventOpenController extends Controller
             'golongan_biaya' => $request->golongan_biaya,
             'nominal_bayar' => $nominalBayar,
             'bukti_transfer' => $buktiPath,
-            'qr_token' => 'FTI-' . strtoupper(Str::random(4)) . '-' . time(),
+            'qr_token' => 'FTI-' . strtoupper(Str::random(10)) . '-' . strtoupper(Str::random(6)),
             'status_pembayaran' => 'Menunggu',
             'pesan_penolakan' => null
         ]);
+
+        $adminEmails = User::where('role', 'admin')->pluck('email')->toArray();
+        if (!empty($adminEmails)) {
+            Mail::to($adminEmails)->send(new AdminNewRegistrationMail([
+                'jenis' => 'Event Open — ' . $event->judul,
+                'nama_kegiatan' => $event->judul,
+                'nama_pendaftar' => $request->nama_lengkap,
+                'detail' => [
+                    'BIB' => strtoupper($request->bib_name),
+                    'Kategori Lomba' => $request->kategori_lomba,
+                    'Asal Daerah' => $request->asal_daerah,
+                    'Golongan Biaya' => $request->golongan_biaya,
+                ],
+                'link_verifikasi' => route('event.open.show', $event->slug),
+                'waktu_daftar' => now()->translatedFormat('d F Y, H:i') . ' WIB',
+            ]));
+        }
 
         return redirect()->back()->with('success', 'Berkas pendaftaran baru Anda berhasil dikirim ke panitia.');
     }
@@ -205,7 +226,7 @@ class EventOpenController extends Controller
     // Memproses Verifikasi Status Pembayaran & Reset (Oleh Admin)
     public function verifikasi(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $registration = EventRegistration::findOrFail($id);
 
@@ -223,13 +244,31 @@ class EventOpenController extends Controller
         }
 
         $registration->save();
+
+        if (in_array($request->status_pembayaran, ['Valid', 'Ditolak'])) {
+            Mail::to($registration->email)->send(new RegistrationStatusMail([
+                'status' => $request->status_pembayaran,
+                'jenis' => 'Event Open',
+                'nama_kegiatan' => $registration->event->judul,
+                'nama_pendaftar' => $registration->nama_lengkap,
+                'alasan_penolakan' => $registration->pesan_penolakan,
+                'detail' => [
+                    'BIB' => $registration->bib_name,
+                    'Kategori Lomba' => $registration->kategori_lomba,
+                ],
+                'link_terkait' => $request->status_pembayaran === 'Valid'
+                    ? route('event.open.history')
+                    : route('event.open.show', $registration->event->slug),
+                'link_label' => $request->status_pembayaran === 'Valid' ? 'Lihat Tiket QR' : 'Perbaiki & Kirim Ulang',
+            ]));
+        }
         return redirect()->back()->with('success', 'Status validasi peserta berhasil diperbarui.');
     }
 
     // Menampilkan Dashboard Kelola Master Event
     public function kelola()
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $events = Event::where('tipe', 'Open')->orderBy('created_at', 'desc')->get();
         return view('event.open.kelola', compact('events'));
@@ -238,7 +277,7 @@ class EventOpenController extends Controller
     // Memproses Pembaruan Modifikasi Master Event
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $event = Event::findOrFail($id);
 
@@ -278,14 +317,14 @@ class EventOpenController extends Controller
         if ($request->hasFile('poster')) {
             $file = $request->file('poster');
             $filename = time() . '_poster_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/event/poster'), $filename);
+            $file->storeAs('event/poster', $filename, 'private');
             $event->poster = 'uploads/event/poster/' . $filename;
         }
 
         if ($request->hasFile('thb_file')) {
             $file = $request->file('thb_file');
             $filename = time() . '_thb_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/event/thb'), $filename);
+            $file->storeAs('event/thb', $filename, 'private');
             $event->thb_file = 'uploads/event/thb/' . $filename;
         }
 
@@ -310,7 +349,7 @@ class EventOpenController extends Controller
     // Memproses Penghapusan Event
     public function destroy($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         Event::findOrFail($id)->delete();
         return redirect()->route('event.open.kelola')->with('success', 'Event telah ditarik dan dihapus dari sistem.');
@@ -330,7 +369,7 @@ class EventOpenController extends Controller
     // Memproses Data dari Scanner QR Code Kamera Admin dengan Validasi Nomor Pertandingan Spasial
     public function checkIn(Request $request)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak.']);
         }
 
@@ -339,8 +378,8 @@ class EventOpenController extends Controller
 
         // Langkah 1: Cari pendaftaran yang COCOK dengan Token QR sekaligus ID Event ini
         $registration = EventRegistration::where('qr_token', $token)
-                                          ->where('event_id', $eventId)
-                                          ->first();
+            ->where('event_id', $eventId)
+            ->first();
 
         if (!$registration) {
             // Langkah 2: Jika tidak cocok, cek apakah token ini sebenarnya terdaftar di nomor pertandingan/event lain
@@ -388,15 +427,15 @@ class EventOpenController extends Controller
     // Menampilkan Halaman Khusus Cetak Laporan Check-In (PDF)
     public function printCheckIn($id)
     {
-        if (!auth()->check() || auth()->user()->email !== 'admin@triatlon.test') return abort(403);
+        if (!auth()->check() || !auth()->user()->isAdmin()) return abort(403);
 
         $event = Event::findOrFail($id);
 
         // Hanya mengambil pendaftar yang kolom waktu_checkin-nya tidak kosong (sudah absen)
         $checkins = EventRegistration::where('event_id', $event->id)
-                        ->whereNotNull('waktu_checkin')
-                        ->orderBy('waktu_checkin', 'asc')
-                        ->get();
+            ->whereNotNull('waktu_checkin')
+            ->orderBy('waktu_checkin', 'asc')
+            ->get();
 
         return view('event.open.print-checkin', compact('event', 'checkins'));
     }

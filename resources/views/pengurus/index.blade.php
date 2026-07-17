@@ -2,6 +2,10 @@
 
 @section('title', 'Pengurus FTI Lampung')
 
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+
 @section('content')
     <!-- Hero Header Section -->
     <section class="bg-navy py-20 px-8 md:px-16 text-center relative overflow-hidden">
@@ -19,7 +23,7 @@
 
     <!-- TOMBOL KONTROL ADMINISTRATOR -->
     @auth
-        @if(auth()->user()->email == 'admin@triatlon.test')
+        @if(auth()->user()->isAdmin())
             <div class="bg-navy border-t border-white/10 py-6 px-8 md:px-16 z-20 relative">
                 <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                     <p class="text-yellow font-bold text-xs uppercase tracking-widest flex items-center">
@@ -91,8 +95,10 @@
             @if($ketuaUmum)
                 <div class="flex justify-center mb-12">
                     <div class="bg-navy p-8 rounded-[2rem] text-center w-full max-w-[340px] shadow-2xl border-4 border-yellow transform hover:-translate-y-2 transition-transform duration-300">
-                        <div class="w-20 h-20 mx-auto bg-white/10 text-yellow rounded-full mb-4 flex items-center justify-center font-black text-2xl uppercase">
-                            {{ substr($ketuaUmum->nama, 0, 1) }}
+                        <div class="w-20 h-20 mx-auto bg-white/10 text-yellow rounded-full mb-4 flex items-center justify-center shadow-inner">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                            </svg>
                         </div>
                         <h3 class="font-black text-white text-lg uppercase mb-1 leading-tight">{{ $ketuaUmum->nama }}</h3>
                         <p class="text-xs font-bold uppercase tracking-widest text-yellow bg-white/10 px-3 py-1 rounded inline-block mt-2">
@@ -106,8 +112,10 @@
             <div class="flex flex-wrap justify-center gap-6 mb-24">
                 @forelse($intiLainnya as $i)
                     <div class="bg-white p-6 rounded-[2rem] shadow-xl border border-gray-100 text-center w-full max-w-[260px] flex flex-col justify-center transform hover:-translate-y-1 transition-transform duration-300 min-h-[160px]">
-                        <div class="w-16 h-16 mx-auto bg-gray-100 text-navy rounded-full mb-4 flex items-center justify-center font-black text-xl uppercase">
-                            {{ substr($i->nama, 0, 1) }}
+                        <div class="w-16 h-16 mx-auto bg-gray-100 text-navy rounded-full mb-4 flex items-center justify-center">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                            </svg>
                         </div>
                         <h3 class="font-black text-navy text-sm uppercase mb-1 leading-tight">{{ $i->nama }}</h3>
                         <p class="text-[10px] font-bold text-navy/50 uppercase tracking-widest">{{ $i->jabatan }}</p>

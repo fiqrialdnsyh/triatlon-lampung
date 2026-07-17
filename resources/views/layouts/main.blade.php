@@ -38,17 +38,30 @@
 
     <style>
         .nav-link {
-            transition: all 0.3s ease;
+            position: relative;
+            transition: color 0.25s ease;
         }
 
-        .nav-link:hover {
-            background-color: #FFEB00;
-            color: #0B1528;
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -2px;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background-color: #0B1528;
+            transition: width 0.25s ease;
         }
 
-        .active-nav {
-            background-color: #FFEB00;
+        .nav-link:hover::after,
+        .nav-link.active-nav::after {
+            width: 60%;
+        }
+
+        .nav-link.active-nav {
             color: #0B1528;
+            font-weight: 900;
         }
 
         .feature-card,
@@ -63,14 +76,16 @@
             transform: translateY(-5px);
         }
 
-        /* Tambahan efek bayangan halus saat navbar menempel di atas */
         header.sticky {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 6px 20px -8px rgba(11, 21, 40, 0.15);
         }
 
-        /* Cegah body scroll saat menu mobile terbuka */
         body.mobile-menu-open {
             overflow: hidden;
+        }
+
+        .mobile-nav-link {
+            transition: all 0.2s ease;
         }
     </style>
 </head>
@@ -78,29 +93,30 @@
 <body class="bg-navy font-sans text-navy antialiased min-h-screen flex flex-col overflow-x-hidden">
 
     <!-- Navbar Global (Latar Belakang Cream) -->
-    <header class="bg-cream py-4 md:py-6 px-4 sm:px-8 md:px-16 flex items-center justify-between z-50 sticky top-0 w-full border-b border-gray-200 transition-all duration-300">
+    <header class="bg-cream/95 backdrop-blur-sm py-3.5 md:py-5 px-4 sm:px-8 md:px-16 flex items-center justify-between z-50 sticky top-0 w-full border-b border-navy/10 transition-all duration-300">
         <div class="logo">
             <a href="{{ url('/') }}" class="flex items-center gap-2 md:gap-3 text-navy text-base sm:text-xl md:text-2xl font-black uppercase tracking-wide group">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo FTI" class="h-7 md:h-10 object-contain group-hover:scale-105 transition-transform">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo FTI" class="h-8 md:h-11 object-contain group-hover:scale-105 transition-transform">
                 <span>FTI LAMPUNG</span>
             </a>
         </div>
 
-        <!-- Nav Desktop (Teks Gelap) -->
-        <nav class="hidden md:flex space-x-2 items-center">
-            <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active-nav' : 'text-navy' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">BERANDA</a>
-            <a href="{{ url('/event') }}" class="nav-link {{ request()->is('event*') ? 'active-nav' : 'text-navy' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">EVENT</a>
-            <a href="{{ url('/pelatihan') }}" class="nav-link {{ request()->is('pelatihan*') ? 'active-nav' : 'text-navy' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">PELATIHAN</a>
-            <a href="{{ url('/campaign') }}" class="nav-link {{ request()->is('campaign*') ? 'active-nav' : 'text-navy' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">CAMPAIGN</a>
-            <a href="{{ url('/ranking') }}" class="nav-link {{ request()->is('ranking*') ? 'active-nav' : 'text-navy' }} px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">RANKING</a>
+        <!-- Nav Desktop -->
+        <nav class="hidden md:flex items-center gap-1">
+            <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active-nav' : 'text-navy/70' }} px-4 py-2 font-bold text-sm uppercase tracking-wider">BERANDA</a>
+            <a href="{{ url('/event') }}" class="nav-link {{ request()->is('event*') ? 'active-nav' : 'text-navy/70' }} px-4 py-2 font-bold text-sm uppercase tracking-wider">EVENT</a>
+            <a href="{{ url('/pelatihan') }}" class="nav-link {{ request()->is('pelatihan*') ? 'active-nav' : 'text-navy/70' }} px-4 py-2 font-bold text-sm uppercase tracking-wider">PELATIHAN</a>
+            <a href="{{ url('/ranking') }}" class="nav-link {{ request()->is('ranking*') ? 'active-nav' : 'text-navy/70' }} px-4 py-2 font-bold text-sm uppercase tracking-wider">RANKING</a>
+
+            <div class="w-px h-6 bg-navy/15 mx-3"></div>
 
             <!-- Logika Login / Logout -->
             @guest
-                <a href="{{ url('/login') }}" class="nav-link text-navy px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm">LOGIN</a>
+                <a href="{{ url('/login') }}" class="bg-navy text-yellow px-5 py-2.5 font-black text-xs uppercase tracking-wider rounded-lg hover:bg-navy/90 transition-colors shadow-sm">LOGIN</a>
             @else
                 <form action="{{ url('/logout') }}" method="POST" class="inline m-0 p-0">
                     @csrf
-                    <button type="submit" class="nav-link text-navy px-4 py-1.5 font-bold text-sm uppercase tracking-wider rounded-sm cursor-pointer">LOGOUT</button>
+                    <button type="submit" class="bg-white text-navy border border-navy/15 px-5 py-2.5 font-black text-xs uppercase tracking-wider rounded-lg hover:bg-navy hover:text-yellow hover:border-navy transition-colors cursor-pointer">LOGOUT</button>
                 </form>
             @endguest
         </nav>
@@ -116,22 +132,34 @@
         </button>
     </header>
 
-    <!-- Panel Menu Mobile (Latar Belakang Cream) -->
-    <div id="mobileMenu" class="hidden md:hidden fixed inset-0 z-40 bg-cream pt-24 px-6 pb-10 overflow-y-auto">
-        <nav class="flex flex-col gap-1">
-            <a href="{{ url('/') }}" onclick="closeMobileMenu()" class="{{ request()->is('/') ? 'bg-yellow text-navy' : 'text-navy hover:bg-white/50' }} px-4 py-3.5 font-bold text-base uppercase tracking-wider rounded-lg transition-colors">BERANDA</a>
-            <a href="{{ url('/event') }}" onclick="closeMobileMenu()" class="{{ request()->is('event*') ? 'bg-yellow text-navy' : 'text-navy hover:bg-white/50' }} px-4 py-3.5 font-bold text-base uppercase tracking-wider rounded-lg transition-colors">EVENT</a>
-            <a href="{{ url('/pelatihan') }}" onclick="closeMobileMenu()" class="{{ request()->is('pelatihan*') ? 'bg-yellow text-navy' : 'text-navy hover:bg-white/50' }} px-4 py-3.5 font-bold text-base uppercase tracking-wider rounded-lg transition-colors">PELATIHAN</a>
-            <a href="{{ url('/campaign') }}" onclick="closeMobileMenu()" class="{{ request()->is('campaign*') ? 'bg-yellow text-navy' : 'text-navy hover:bg-white/50' }} px-4 py-3.5 font-bold text-base uppercase tracking-wider rounded-lg transition-colors">CAMPAIGN</a>
-            <a href="{{ url('/ranking') }}" onclick="closeMobileMenu()" class="{{ request()->is('ranking*') ? 'bg-yellow text-navy' : 'text-navy hover:bg-white/50' }} px-4 py-3.5 font-bold text-base uppercase tracking-wider rounded-lg transition-colors">RANKING</a>
+    <!-- Panel Menu Mobile -->
+    <div id="mobileMenu" class="hidden md:hidden fixed inset-0 z-40 bg-cream pt-6 px-6 pb-10 overflow-y-auto">
+        <div class="flex items-center justify-between mb-8 pt-2">
+            <a href="{{ url('/') }}" onclick="closeMobileMenu()" class="flex items-center gap-2 text-navy text-base font-black uppercase tracking-wide">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo FTI" class="h-8 object-contain">
+                <span>FTI LAMPUNG</span>
+            </a>
+        </div>
 
-            <div class="border-t border-gray-300 mt-4 pt-4">
+        <nav class="flex flex-col gap-1.5">
+            <a href="{{ url('/') }}" onclick="closeMobileMenu()" class="mobile-nav-link {{ request()->is('/') ? 'bg-navy text-yellow shadow-md' : 'text-navy hover:bg-white' }} px-5 py-4 font-black text-base uppercase tracking-wider rounded-xl">BERANDA</a>
+            <a href="{{ url('/event') }}" onclick="closeMobileMenu()" class="mobile-nav-link {{ request()->is('event*') ? 'bg-navy text-yellow shadow-md' : 'text-navy hover:bg-white' }} px-5 py-4 font-black text-base uppercase tracking-wider rounded-xl">EVENT</a>
+            <a href="{{ url('/pelatihan') }}" onclick="closeMobileMenu()" class="mobile-nav-link {{ request()->is('pelatihan*') ? 'bg-navy text-yellow shadow-md' : 'text-navy hover:bg-white' }} px-5 py-4 font-black text-base uppercase tracking-wider rounded-xl">PELATIHAN</a>
+            <a href="{{ url('/ranking') }}" onclick="closeMobileMenu()" class="mobile-nav-link {{ request()->is('ranking*') ? 'bg-navy text-yellow shadow-md' : 'text-navy hover:bg-white' }} px-5 py-4 font-black text-base uppercase tracking-wider rounded-xl">RANKING</a>
+
+            <div class="border-t border-navy/10 mt-4 pt-5">
                 @guest
-                    <a href="{{ url('/login') }}" onclick="closeMobileMenu()" class="block text-center bg-navy text-yellow px-4 py-3.5 font-black text-base uppercase tracking-wider rounded-lg hover:bg-navy/90 transition-colors">LOGIN</a>
+                    <a href="{{ url('/login') }}" onclick="closeMobileMenu()" class="flex items-center justify-center gap-2 bg-navy text-yellow px-4 py-4 font-black text-base uppercase tracking-wider rounded-xl hover:bg-navy/90 transition-colors shadow-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        LOGIN
+                    </a>
                 @else
                     <form action="{{ url('/logout') }}" method="POST" class="m-0 p-0">
                         @csrf
-                        <button type="submit" class="w-full text-center bg-white text-navy hover:bg-gray-100 px-4 py-3.5 font-black text-base uppercase tracking-wider rounded-lg cursor-pointer transition-colors border border-gray-200">LOGOUT</button>
+                        <button type="submit" class="w-full flex items-center justify-center gap-2 bg-white text-navy hover:bg-gray-100 px-4 py-4 font-black text-base uppercase tracking-wider rounded-xl cursor-pointer transition-colors border border-navy/10 shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            LOGOUT
+                        </button>
                     </form>
                 @endguest
             </div>

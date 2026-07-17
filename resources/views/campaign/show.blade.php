@@ -202,7 +202,7 @@
         @endif
 
         <!-- Panel Admin Verifikasi -->
-        @if(auth()->check() && auth()->user()->email === 'admin@triatlon.test' && count($allKontribusi))
+        @if(auth()->check() && auth()->user()->isAdmin() && count($allKontribusi))
             <div class="mt-12 bg-[#F8F9FA] rounded-[2rem] p-6 md:p-8">
                 <h3 class="font-black text-navy uppercase text-sm mb-4">Verifikasi Kontribusi</h3>
                 <div class="space-y-3">

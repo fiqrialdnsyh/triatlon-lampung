@@ -18,7 +18,7 @@
         <h1 class="font-oswald text-white text-4xl md:text-6xl font-bold uppercase tracking-wide mb-4">DIRECTORY VENUE</h1>
         <p class="text-white/70 font-medium text-sm leading-relaxed">Jelajahi pusat data arena perlombaan, area transisi, dan rute lintasan olahraga Triatlon terbaik di seluruh penjuru Provinsi Lampung.</p>
 
-        @if(auth()->check() && auth()->user()->email == 'admin@triatlon.test')
+        @if(auth()->check() && auth()->user()->isAdmin())
             <div class="mt-8">
                 <a href="{{ route('venue.create') }}" class="inline-block bg-yellow text-navy px-8 py-3.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-white transition-colors shadow-xl hover:-translate-y-1 transform duration-200">
                     + Tambah Venue Baru
