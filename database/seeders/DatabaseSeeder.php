@@ -12,12 +12,7 @@ class DatabaseSeeder extends Seeder
     {
         // Membuat akun Admin (role dipakai untuk cek isAdmin(), bukan email)
         User::updateOrCreate(
-            ['email' => 'fti@triathlon-lampung.id'],
-            [
-                'name' => 'Administrator',
-                'password' => Hash::make('Tanggal17Bulan072026'),
-                'role' => 'admin',
-            ]
+
         );
     }
 }

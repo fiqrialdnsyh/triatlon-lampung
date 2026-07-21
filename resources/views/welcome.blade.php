@@ -36,7 +36,7 @@
                     <!-- Garis Aksen -->
                     <div class="absolute -left-5 md:-left-8 top-2 w-1.5 h-20 bg-yellow rounded-full hidden md:block"></div>
 
-                    <span class="text-yellow-600 text-xs font-black tracking-widest uppercase mb-3 block">Mengenal FTI
+                    <span class="text-yellow-600 text-xs font-black tracking-widest uppercase mb-3 block">FTI
                         Lampung</span>
                     <h2
                         class="font-oswald text-3xl md:text-4xl lg:text-5xl font-bold text-navy uppercase tracking-wide mb-6 leading-tight">
@@ -49,34 +49,43 @@
 
                     <!-- Badge Ikon Olahraga -->
                     <div class="flex flex-wrap gap-3">
-                        <span
-                            class="bg-navy/5 border border-navy/10 text-navy px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center">
-                            <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z">
-                                </path>
-                            </svg>
-                            Renang
-                        </span>
-                        <span
-                            class="bg-navy/5 border border-navy/10 text-navy px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center">
-                            <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
-                            Sepeda
-                        </span>
-                        <span
-                            class="bg-navy/5 border border-navy/10 text-navy px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center">
-                            <svg class="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                            Lari
-                        </span>
+
+                        <!-- Renang -->
+                        <div
+                            class="bg-[#EBF5FF] border border-[#BDE0FE] pl-3 pr-4 py-2.5 rounded-xl flex items-center gap-3">
+                            <div class="bg-blue-500 text-white p-2 rounded-lg shrink-0">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M2 18c.6.5 1.2 1 2.5 1s1.9-.5 2.5-1 1.2-1 2.5-1 1.9.5 2.5 1 1.2 1 2.5 1 1.9-.5 2.5-1 1.2-1 2.5-1 1.9.5 2.5 1l-.9 1.6c-.5-.4-1-.8-1.9-.8s-1.4.4-1.9.8c-.6.5-1.4 1.1-2.7 1.1s-2.1-.6-2.7-1.1c-.5-.4-1-.8-1.9-.8s-1.4.4-1.9.8c-.6.5-1.4 1.1-2.7 1.1s-2.1-.6-2.7-1.1L2 18zm14.5-4.6c1.1-.6 1.8-1.7 1.8-3 0-1.9-1.6-3.4-3.5-3.4-1 0-1.9.4-2.5 1.1L11.1 9l1.2 1.2-3.5 3.5-2-2c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l2.7 2.7c.4.4 1 .4 1.4 0l4.2-4.2.7.7c.4.4 1 .4 1.4 0 .1-.1.2-.2.2-.3zm-3.7-5c.6 0 1 .4 1 1s-.4 1-1 1-1-.4-1-1 .4-1 1-1z" />
+                                </svg>
+                            </div>
+                            <span class="text-[10px] font-black text-blue-600 uppercase tracking-wider">Renang</span>
+                        </div>
+
+                        <!-- Sepeda -->
+                        <div
+                            class="bg-[#FEF9C3] border border-[#FDE047] pl-3 pr-4 py-2.5 rounded-xl flex items-center gap-3">
+                            <div class="bg-yellow-500 text-white p-2 rounded-lg shrink-0">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M15.5 5.5c.83 0 1.5-.67 1.5-1.5S16.33 2.5 15.5 2.5 14 3.17 14 4s.67 1.5 1.5 1.5zM5 12c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6.5c-1.38 0-2.5-1.12-2.5-2.5S3.62 13.5 5 13.5 7.5 14.62 7.5 16 6.38 18.5 5 18.5zm5.8-10l2.4-2.4.8.8C15.1 8.1 16.5 8.9 18 8.9V7.1c-1.1 0-2.1-.6-2.6-1.5l-1.7-2.4c-.4-.5-1-.8-1.6-.8-.5 0-1 .2-1.3.5L7.6 6c-.5.5-.8 1.1-.8 1.8 0 .7.3 1.3.8 1.8L11 13v5h2v-6.2l-2.2-2.3zM19 12c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                            </div>
+                            <span class="text-[10px] font-black text-yellow-700 uppercase tracking-wider">Sepeda</span>
+                        </div>
+
+                        <!-- Lari -->
+                        <div
+                            class="bg-[#FEE2E2] border border-[#FCA5A5] pl-3 pr-4 py-2.5 rounded-xl flex items-center gap-3">
+                            <div class="bg-red-500 text-white p-2 rounded-lg shrink-0">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M13.5 5.5c.83 0 1.5-.67 1.5-1.5S14.33 2.5 13.5 2.5 12 3.17 12 4s.67 1.5 1.5 1.5zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 7.4V11h2V8.7l1.8-.8z" />
+                                </svg>
+                            </div>
+                            <span class="text-[10px] font-black text-red-600 uppercase tracking-wider">Lari</span>
+                        </div>
+
                     </div>
                 </div>
 
@@ -108,9 +117,9 @@
                                     class="bg-yellow text-navy text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3 inline-block shadow-sm">Agenda
                                     Utama Nasional</span>
                                 <h3 class="font-oswald text-2xl font-bold text-white uppercase tracking-wide mb-2">Krakatau
-                                    Triathlon</h3>
+                                    Triathlon Seri</h3>
                                 <p class="text-sm text-white/70 leading-relaxed font-medium">
-                                    Seri kejuaraan nasional yang akan diikuti atlet elite dari berbagai provinsi. Event ini
+                                    Seri kejuaraan nasional yang akan diikuti oleh atlet dari berbagai provinsi. Event ini
                                     didesain untuk mengembangkan potensi <em class="text-yellow">sport tourism</em> dengan
                                     memanfaatkan keindahan garis pantai Lampung Selatan hingga Pesawaran.
                                 </p>
@@ -274,9 +283,11 @@
     <section class="bg-navy py-12 md:py-20 px-4 sm:px-8 md:px-16" data-aos="fade-up">
         <div class="max-w-5xl mx-auto">
             <div class="text-center mb-8 md:mb-12">
-                <span class="text-yellow/60 text-[10px] sm:text-xs font-black uppercase tracking-widest mb-2 block">Jelajahi
+                <span
+                    class="text-yellow/60 text-[10px] sm:text-xs font-black uppercase tracking-widest mb-2 block">Jelajahi
                     Ekosistem Triatlon</span>
-                <h2 class="font-black text-2xl sm:text-3xl md:text-4xl text-white uppercase tracking-wide">FITUR PORTAL</h2>
+                <h2 class="font-black text-2xl sm:text-3xl md:text-4xl text-white uppercase tracking-wide">FITUR PORTAL
+                </h2>
                 <div class="w-16 h-1 bg-yellow mx-auto mt-4"></div>
             </div>
 
@@ -296,7 +307,7 @@
                         class="text-xl sm:text-2xl md:text-3xl font-black uppercase leading-tight mb-2 md:mb-3 text-navy pr-14 md:pr-0">
                         ATLET, PELATIH<br>& WASIT</h3>
                     <p class="text-xs sm:text-sm font-semibold text-navy/70 leading-relaxed pr-10 md:pr-12">
-                        Direktori data profil, rekam jejak, dan progres performa atlet, pelatih, serta wasit terdaftar.
+                        Direktori data profil atlet pelatih dan wasit.
                     </p>
                     <div
                         class="absolute bottom-5 right-5 md:bottom-8 md:right-8 w-10 h-10 md:w-12 md:h-12 bg-yellow rounded-lg md:rounded-xl flex items-center justify-center transition-colors group-hover:bg-navy group-hover:text-yellow">
@@ -323,7 +334,7 @@
                         class="text-xl sm:text-2xl md:text-3xl font-black uppercase leading-tight mb-2 md:mb-3 text-navy pr-14 md:pr-0">
                         PENGURUS</h3>
                     <p class="text-xs sm:text-sm font-semibold text-navy/70 leading-relaxed pr-10 md:pr-12">
-                        Susunan kepengurusan FTI tingkat Provinsi hingga Pengurus Cabang di Kabupaten/Kota.
+                        Susunan kepengurusan Federasi Triathlon Lampung hingga pengurus cabang di Kabupaten/Kota.
                     </p>
                     <div
                         class="absolute bottom-5 right-5 md:bottom-8 md:right-8 w-10 h-10 md:w-12 md:h-12 bg-yellow rounded-lg md:rounded-xl flex items-center justify-center group-hover:bg-navy group-hover:text-yellow transition-colors">
@@ -377,7 +388,7 @@
                         class="text-xl sm:text-2xl md:text-3xl font-black uppercase leading-tight mb-2 md:mb-3 text-navy pr-14 md:pr-0">
                         VENUE</h3>
                     <p class="text-xs sm:text-sm font-semibold text-navy/70 leading-relaxed pr-10 md:pr-12">
-                        Informasi detail lokasi perlombaan, fasilitas transisi, dan rute lintasan renang, sepeda, lari.
+                        Informasi detail lokasi perlombaan.
                     </p>
                     <div
                         class="absolute bottom-5 right-5 md:bottom-8 md:right-8 w-10 h-10 md:w-12 md:h-12 bg-yellow rounded-lg md:rounded-xl flex items-center justify-center group-hover:bg-navy group-hover:text-yellow transition-colors">
